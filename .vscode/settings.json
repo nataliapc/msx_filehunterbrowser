@@ -1,0 +1,28 @@
+{
+    "github.copilot.chat.codeGeneration.instructions": [
+        {
+            "text": ""
+        },
+        {
+            "file": "../docs/ESP8266_UNAPI_Firmware_Documentation.md"
+        },
+        {
+            "file": "../docs/sm_wifi_lite.vhd"
+        },
+        {
+            "file": "../docs/filehunter_api.md"
+        },
+        {
+            "file": "../docs/MSX-UNAPI-specification/Introduction to MSX-UNAPI.md"
+        },
+        {
+            "file": "../docs/MSX-UNAPI-specification/MSX UNAPI specification 1.1.md"
+        },
+        {
+            "file": "../docs/MSX-UNAPI-specification/TCP-IP UNAPI specification.md"
+        },
+        {
+            "file": "../docs/MSX-UNAPI-specification/Ethernet UNAPI specification 1.1.md"
+        },
+    ],
+}
