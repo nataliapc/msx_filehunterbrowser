@@ -1,4 +1,4 @@
-.PHONY: clean test release resview dsk rom
+.PHONY: clean contrib test release resview dsk rom
 
 SDCC_VER := 4.2.0
 DOCKER_IMG = nataliapc/sdcc:$(SDCC_VER)
@@ -24,6 +24,7 @@ INCDIR = $(ROOTDIR)/includes
 RESDIR = $(ROOTDIR)/res
 OBJDIR = $(ROOTDIR)/obj
 DSKDIR = $(ROOTDIR)/dsk
+CONTRIB = $(ROOTDIR)/contrib
 EXTERNALS = $(ROOTDIR)/externals
 DIR_GUARD=@mkdir -p $(OBJDIR)
 LIB_GUARD=@mkdir -p $(LIBDIR)
@@ -37,7 +38,7 @@ JAVA = java
 DSKTOOL = $(BINDIR)/dsktool
 OPENMSX = openmsx
 
-EMUEXT = -ext debugdevice -ext scc -ext audio
+EMUEXT = -ext debugdevice
 EMUEXT1 = $(EMUEXT) -ext Mitsubishi_ML-30DC_ML-30FD
 EMUEXT2 = $(EMUEXT) -ext msxdos2
 EMUEXT2P = $(EMUEXT) -ext msxdos2 -ext ram512k
@@ -45,7 +46,7 @@ EMUSCRIPTS = -script $(ROOTDIR)/emulation/boot.tcl
 
 
 DEFINES := -D_DOSLIB_
-#DEBUG := -D_DEBUG_
+DEBUG := -D_DEBUG_
 #FULLOPT :=  --max-allocs-per-node 200000
 LDFLAGS = -rc
 OPFLAGS = --std-sdcc2x --less-pedantic --opt-code-size -pragma-define:CRT_ENABLE_STDIO=0
@@ -53,7 +54,7 @@ WRFLAGS = --disable-warning 196 --disable-warning 84
 CCFLAGS = --code-loc 0x0180 --data-loc 0 -mz80 --no-std-crt0 --out-fmt-ihx $(OPFLAGS) $(WRFLAGS) $(DEFINES) $(DEBUG)
 
 
-LIBS = dos.lib conio.lib unapi_net.lib utils.lib vdp.lib
+LIBS = dos.lib conio.lib unapi_tcpip.lib utils.lib vdp.lib
 REL_LIBS = 	$(addprefix $(LIBDIR)/, $(LIBS)) \
 			$(addprefix $(OBJDIR)/, \
 				crt0msx_msxdos_advanced.rel \
@@ -66,7 +67,10 @@ PROGRAM = fh
 DSKNAME = $(PROGRAM).dsk
 
 
-all: $(OBJDIR)/$(PROGRAM).com release
+all: contrib $(OBJDIR)/$(PROGRAM).com release
+
+contrib:
+	@$(MAKE) -C $(CONTRIB) all
 
 $(LIBDIR)/conio.lib:
 	@$(MAKE) -C $(EXTERNALS)/sdcc_msxconio all SDCC_VER=$(SDCC_VER) DEFINES=-DXXXXX
@@ -80,12 +84,12 @@ $(LIBDIR)/dos.lib:
 	@$(LIB_GUARD)
 	@cp $(EXTERNALS)/sdcc_msxdos/lib/dos.lib $@
 	@cp $(EXTERNALS)/sdcc_msxdos/include/dos.h $(INCDIR)
-	@$(AR) -d $@ dos_cputs.c.rel dos_kbhit.c.rel ;
+	@$(AR) -d $@ dos_cputs.c.rel dos_kbhit.c.rel dos_cprintf.c.rel ;
 
-$(LIBDIR)/unapi_net.lib: $(patsubst $(SRCLIB)/%, $(OBJDIR)/%.rel, $(wildcard $(SRCLIB)/unapinet_*))
-	@echo "$(COL_WHITE)######## Creating $@$(COL_RESET)"
-	@$(LIB_GUARD)
-	@$(AR) $(LDFLAGS) $@ $^ ;
+#$(LIBDIR)/unapi_net.lib: $(patsubst $(SRCLIB)/%, $(OBJDIR)/%.rel, $(wildcard $(SRCLIB)/unapinet_*))
+#	@echo "$(COL_WHITE)######## Creating $@$(COL_RESET)"
+#	@$(LIB_GUARD)
+#	@$(AR) $(LDFLAGS) $@ $^ ;
 
 $(LIBDIR)/utils.lib: $(patsubst $(SRCLIB)/%, $(OBJDIR)/%.rel, $(wildcard $(SRCLIB)/utils_*))
 	@echo "$(COL_WHITE)######## Creating $@$(COL_RESET)"

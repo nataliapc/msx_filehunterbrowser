@@ -6,6 +6,7 @@
 ;******************************************************************************
 ;	.macro DEBUG_BREAKPOINT
 DEBUG_BREAKPOINT::
+_DEBUG_BREAKPOINT::
 		push af
 		out (0x18),a
 		pop af
@@ -19,6 +20,7 @@ DEBUG_BREAKPOINT::
 ;******************************************************************************
 ;	.macro DEBUG_BORDERCOLOR value
 DEBUG_BORDERCOLOR::
+_DEBUG_BORDERCOLOR::
 		push af
 ;		ld  a,#value
 		out (0x99),a
@@ -45,6 +47,7 @@ PRINT_DEFAULTNUM	= PRINT_LINEFEED|PRINT_SINGLEBYTE|PRINT_HEXADECIMAL|PRINT_BINAR
 	; A reg to print
 ;	.macro DEBUG_PRINT_A
 DEBUG_PRINT_A::
+_DEBUG_PRINT_A::
 		push af
 		ld  a,#(PRINT_HEXADECIMAL|PRINT_MULTIBYTE)
 		out (0x2e),a
@@ -56,6 +59,7 @@ DEBUG_PRINT_A::
 	; HL reg to print
 ;	.macro DEBUG_PRINT_HL
 DEBUG_PRINT_HL::
+_DEBUG_PRINT_HL::
 		push af
 		ld  a,#(PRINT_HEXADECIMAL|PRINT_MULTIBYTE)
 		out (0x2e),a
@@ -70,6 +74,7 @@ DEBUG_PRINT_HL::
 	; DE reg to print
 ;	.macro DEBUG_PRINT_DE
 DEBUG_PRINT_DE::
+_DEBUG_PRINT_DE::
 		push af
 		ld  a,#(PRINT_HEXADECIMAL|PRINT_MULTIBYTE)
 		out (0x2e),a
@@ -84,6 +89,7 @@ DEBUG_PRINT_DE::
 	; BC reg to print
 ;	.macro DEBUG_PRINT_BC
 DEBUG_PRINT_BC::
+_DEBUG_PRINT_BC::
 		push af
 		ld  a,#(PRINT_HEXADECIMAL|PRINT_MULTIBYTE)
 		out (0x2e),a
@@ -107,6 +113,7 @@ DEBUG_PRINT_BC::
 	; A ascii char
 ;	.macro DEBUG_PRINT_ASCII
 DEBUG_PRINT_ASCII::
+_DEBUG_PRINT_ASCII::
 		push af
 		ld  a,#(PRINT_LINEFEED|PRINT_MULTIBYTE|PRINT_ASCII)
 		out (0x2e),a
@@ -119,6 +126,7 @@ DEBUG_PRINT_ASCII::
 	; B  string size
 ;	.macro DEBUG_PRINT_ASCII_TEXT
 DEBUG_PRINT_ASCII_TEXT::
+_DEBUG_PRINT_ASCII_TEXT::
 		push bc
 		push af
 		ld  a,#(PRINT_LINEFEED|PRINT_MULTIBYTE|PRINT_ASCII)

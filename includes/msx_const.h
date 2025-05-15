@@ -196,6 +196,7 @@ volatile __at (H_TIMI) uint16_t varHTIMI;
 volatile __at (FORCLR) uint16_t varFORCLR;
 volatile __at (BAKCLR) uint16_t varBAKCLR;
 volatile __at (BDRCLR) uint16_t varBDRCLR;
+volatile __at (HIMEM) uint16_t varHIMEM;
 volatile __at (NEWKEY+0) uint16_t varNEWKEY_row0;
 volatile __at (NEWKEY+1) uint16_t varNEWKEY_row1;
 volatile __at (NEWKEY+2) uint16_t varNEWKEY_row2;
