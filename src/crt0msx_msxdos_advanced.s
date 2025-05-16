@@ -145,6 +145,9 @@ cont:
 	;* Place data after program code, and data init code after data
 
 	.area	_CODE
+_unapiBuffer::
+	.ds 3600
+
 	.area	_DATA
 _heap_top::
 	.dw 0

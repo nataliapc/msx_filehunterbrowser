@@ -45,9 +45,8 @@ uint8_t topLine = 0, currentLine = 0;
 uint8_t newTopLine = 0, newCurrentLine = 0;
 
 #define UNAPI_BUFFER_SIZE	1600
-char *unapiBuffer;
+extern char unapiBuffer[UNAPI_BUFFER_SIZE];
 char *list_raw = NULL;
-char *list_tmp = NULL;
 uint32_t downloadSize;
 
 
@@ -61,29 +60,37 @@ void _copyRAMtoVRAM(uint16_t memory, uint16_t vram, uint16_t size) __sdcccall(0)
 
 
 // ========================================================
-static void abortRoutine()
+void abortRoutine()
 {
 	restoreScreen();
 	dos2_exit(1);
 }
 
-static void checkPlatformSystem()
+void initializeBuffers()
+{
+	// A way to avoid using low memory when using BIOS calls from DOS
+	if (heap_top < (void*)0x8000)
+		heap_top = (void*)0x8000;
+
+	// Initialize buffers
+	list_start = (ListItem_t*)malloc(sizeof(ListItem_t) * 255);
+	buff = malloc(80*20);
+}
+
+void checkPlatformSystem()
 {
 	// Check TCP/IP UNAPI
-	char ret = hgetinit((uint16_t)heap_top);
+	char ret = hgetinit((uint16_t)unapiBuffer);
 	if (ret != ERR_TCPIPUNAPI_OK) {
 #ifndef _DEBUG_
-		if (ret == ERR_TCPIPUNAPI_NOTFOUND) {
-			die("TCP/IP UNAPI not found!\x07\r\n");
-		} else if (ret == ERR_TCPIPUNAPI_NOT_TCPIP_CAPABLE) {
-			die("TCP/IP UNAPI not capable!\x07\r\n");
+		if (ret == ERR_TCPIPUNAPI_NOT_TCPIP_CAPABLE) {
+			die("TCP/IP UNAPI not fully capable!\x07\r\n");
 		} else if (ret == ERR_HGET_INVALID_BUFFER) {
 			die("Invalid buffer for TCP/IP UNAPI!\x07\r\n");
 		}
-		die("Required a working TCP-IP UNAPI interface...\x07\r\n");
+		die("TCP/IP UNAPI not found!\x07\r\n");
 #endif
 	}
-	unapiBuffer = malloc(UNAPI_BUFFER_SIZE);
 
 	// Check MSX2 ROM or higher
 	msxVersionROM = getRomByte(MSXVER);
@@ -119,7 +126,7 @@ inline void redefineFunctionKeys()
 
 inline void redefineCharPatterns()
 {
-	_copyRAMtoVRAM((uint16_t)charPatters, 0x1000+0x7f*8, 5*8);
+	_copyRAMtoVRAM((uint16_t)charPatters, 0x1000+24*8, 2*8);
 }
 
 inline bool isShiftKeyPressed()
@@ -135,20 +142,21 @@ void putstrxy(uint8_t x, uint8_t y, char *str)
 
 // ========================================================
 uint32_t fileSize = 0;
-char progressChar[] = {'|', '/', '-', '\\'};
+char progressChar[] = {'\x84', '\x85'};
 uint8_t progress = 0;
 void HTTPStatusUpdate (bool isChunked)
 {
-	gotoxy(1,1);
+	gotoxy(79,1);
 	putch(progressChar[progress]);
 	progress = (progress + 1) % sizeof(progressChar);
 }
 
 void DataWriteCallback(char *rcv_buffer, int bytes_read)
 {
-	memcpy(list_tmp, rcv_buffer, bytes_read);
-	list_tmp += bytes_read;
-cprintf("list_tmp: %x \n", list_tmp);
+	if (bytes_read) {
+		memcpy(heap_top, rcv_buffer, bytes_read);
+		heap_top += bytes_read;
+	}
 }
 
 void HGETFileSizeUpdate (long contentSize)
@@ -158,10 +166,9 @@ void HGETFileSizeUpdate (long contentSize)
 
 void getRemoteList()
 {
-	if (list_raw) {
-		heap_top = list_raw;
-	}
-	list_raw = list_tmp = heap_top;
+	heapPop();
+	heapPush();
+	list_raw = heap_top;
 
 #ifdef _DEBUG_
 	uint16_t i = TEST_SIZE, size = 1024, pos = 0, cnt;
@@ -199,9 +206,14 @@ void getRemoteList()
 	}
 #endif
 //cprintf("Download complete! %lu    \n", downloadSize);
-getchar();
-	*list_tmp = 0;
-	heap_top = ++list_tmp;
+//getchar();
+	*((char*)heap_top) = '\0';
+	heap_top++;
+	initializeBuffers();
+
+	gotoxy(79,1);
+	putch(progressChar[sizeof(progressChar)-1]);
+	progress = 0;
 }
 
 char *findStringEnd(char *str)
@@ -218,15 +230,9 @@ void processList()
 	char *data = list_raw;
 	char *end;
 	bool isCas = false;
-	ListItem_t *item;
-
-	list_start = item = (ListItem_t*)heap_top;
+	ListItem_t *item = list_start;
 
 	while (*data) {
-		if (!malloc(sizeof(ListItem_t))) {
-			break;
-		}
-
 		// Name
 		end = findStringEnd(data);
 		item->name = data;
@@ -249,9 +255,13 @@ void processList()
 		} else {
 			item->loadMethod = 0;
 		}
-		
+
+//gotoxy(1,1); cprintf(" %x   ", item);
+//getchar();
 		item++;
 	}
+//cputs("DONE!!");
+//getchar();
 	item->name = NULL;
 	itemsCount = item - list_start;
 }
@@ -259,7 +269,7 @@ void processList()
 void updateList()
 {
 	// Clear list area
-	puttext(1,5, 80,22, emptyArea);
+	_fillVRAM(0+4*80, 18*80, ' ');
 
 	// Get remote list
 	getRemoteList();
@@ -285,8 +295,10 @@ void printHeader()
 
 	putstrxy(2,1, "File-Hunter Browser "VERSIONAPP);
 
-	chlinexy(1,4, 80);
-	chlinexy(1,23, 80);
+	for (uint8_t i=0; i<80; i++) {
+		setByteVRAM(3*80+i, 0x17);
+		setByteVRAM(22*80+i, 0x17);
+	}
 
 	printDefaultFooter();
 }
@@ -302,7 +314,7 @@ void printTabs()
 		} else {
 			putstrxy(panel->posx, 2, "       ");
 			putstrxy(panel->posx, 3, "       ");
-			chlinexy(panel->posx, 4, 7);
+			putstrxy(panel->posx, 4, "\x17\x17\x17\x17\x17\x17\x17");
 		}
 		putstrxy(panel->posx+1, 3, panel->name);
 		panel++;
@@ -326,7 +338,8 @@ void setSelectedLine(uint8_t y, bool selected)
 
 void printItem(uint8_t y, ListItem_t *item)
 {
-	putstrxy(2, y, item->name);
+	strncpy(buff, item->name, 64);
+	putstrxy(2, y, buff);
 	if (item->loadMethod) {
 		csprintf(buff, " (%c)", item->loadMethod);
 		putstrxy(67, y, buff);
@@ -350,16 +363,16 @@ void printList()
 
 void panelScrollUp()
 {
-	gettext(1,PANEL_FIRSTY+1, 80,PANEL_LASTY, heap_top);
-	puttext(1,PANEL_FIRSTY, 80,PANEL_LASTY-1, heap_top);
-	puttext(1,PANEL_LASTY, 80,PANEL_LASTY, emptyArea);
+	gettext(1,PANEL_FIRSTY+1, 80,PANEL_LASTY, buff);
+	puttext(1,PANEL_FIRSTY, 80,PANEL_LASTY-1, buff);
+	_fillVRAM(0+(PANEL_LASTY-1)*80, 80, ' ');
 }
 
 void panelScrollDown()
 {
-	gettext(1,PANEL_FIRSTY, 80,PANEL_LASTY-1, heap_top);
-	puttext(1,PANEL_FIRSTY+1, 80,PANEL_LASTY, heap_top);
-	puttext(1,PANEL_FIRSTY, 80,PANEL_FIRSTY, emptyArea);
+	gettext(1,PANEL_FIRSTY, 80,PANEL_LASTY-1, buff);
+	puttext(1,PANEL_FIRSTY+1, 80,PANEL_LASTY, buff);
+	_fillVRAM(0+(PANEL_FIRSTY-1)*80, 80, ' ');
 }
 
 void selectPanel(Panel_t *panel)
@@ -370,7 +383,6 @@ void selectPanel(Panel_t *panel)
 	ASM_EI; ASM_HALT;
 	setSelectedLine(currentLine, false);
 	currentLine = topLine = 0;
-	setSelectedLine(currentLine, true);
 	printTabs();
 	printRequestData();
 
@@ -379,6 +391,7 @@ void selectPanel(Panel_t *panel)
 	ASM_EI; ASM_HALT;
 	printList();
 	printLineCounter();
+	setSelectedLine(currentLine, true);
 }
 
 // ========================================================
@@ -398,7 +411,6 @@ bool menu_loop()
 
 	// Initialize header & panel
 	printHeader();
-	currentPanel = NULL;
 	selectPanel(&panels[PANEL_FIRST]);
 
 	// Menu loop
@@ -576,22 +588,14 @@ int main(char **argv, int argc) __sdcccall(0)
 {
 	argv, argc;
 
-	// Initialize generic string buffer
-	buff = malloc(200);
-
-	// A way to avoid using low memory when using BIOS calls from DOS
-	if (heap_top < (void*)0x8000)
-		heap_top = (void*)0x8000;
-
-	// Initialize empty panel
-	emptyArea = malloc(80*19);
-	memset(emptyArea, ' ', 80*19);
-	
 	// Check arguments
 	checkArguments(argv, argc);
 
 	//Platform system checks
 	checkPlatformSystem();
+
+	initializeBuffers();
+	heapPush();
 
 	// Menu loop
 	menu_loop();
