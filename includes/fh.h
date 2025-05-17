@@ -32,6 +32,7 @@ const ReqMSX_t reqMSX[] = {
 	{"All",""}, {"1  ","1"}, {"2  ","2"}, {"2+ ","2+"}, {"TR ","turbo-r"}
 };
 
+#define PANEL_NONE		-1
 #define PANEL_FIRST		PANEL_ROM
 #define PANEL_ROM		0
 #define PANEL_DSK		1

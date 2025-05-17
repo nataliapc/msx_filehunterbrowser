@@ -432,6 +432,7 @@ void menu_loop()
 	selectPanel(&panels[PANEL_FIRST]);
 
 	// Menu loop
+	int8_t  newPanel = PANEL_NONE;
 	uint8_t key;
 
 	while (true) {
@@ -524,20 +525,16 @@ void menu_loop()
 					selectPanel(currentPanel);
 					break;
 				case 'R':
-					currentPanel = &panels[PANEL_ROM];
-					selectPanel(currentPanel);
+					newPanel = PANEL_ROM;
 					break;
 				case 'D':
-					currentPanel = &panels[PANEL_DSK];
-					selectPanel(currentPanel);
+					newPanel = PANEL_DSK;
 					break;
 				case 'C':
-					currentPanel = &panels[PANEL_CAS];
-					selectPanel(currentPanel);
+					newPanel = PANEL_CAS;
 					break;
 				case 'V':
-					currentPanel = &panels[PANEL_VGM];
-					selectPanel(currentPanel);
+					newPanel = PANEL_VGM;
 					break;
 				case 'M':
 					break;
@@ -548,6 +545,13 @@ void menu_loop()
 				case '5':
 				case KEY_SELECT:
 					break;
+			}
+			if (newPanel != PANEL_NONE) {
+				if (currentPanel != &panels[newPanel]) {
+					currentPanel = &panels[newPanel];
+					selectPanel(currentPanel);
+				}
+				newPanel = PANEL_NONE;
 			}
 		}
 	}
