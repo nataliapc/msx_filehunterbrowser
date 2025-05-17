@@ -1,13 +1,17 @@
-	;--- crt0.asm for MSX-DOS - by Konamiman, 11/2004
-	;    Advanced version: allows "int main(char** argv, int argc)",
-	;    the returned value will be passed to _TERM on DOS 2,
-	;    argv is always 0x100 (the startup code memory is recycled).
-	;
-	;    Compile programs with --code-loc 0x180 --data-loc X
-	;    X=0  -> global vars will be placed immediately after code
-	;    X!=0 -> global vars will be placed at address X
-	;            (make sure that X>0x100+code size)
+;--- crt0.asm for MSX-DOS - by Konamiman (11/2004)
+;    Update to SDCC (4.1.12) Z80 calling conventions (11/2024)
+;    Advanced version: allows "char main(char argc, char** argv)",
+;    - the returned value will be passed to _TERM on DOS 2,
+;	   Error code for termination (0=No error)
+;      
+;    - argv is always 0x100 (the startup code memory is recycled).
+;
+;    Compile programs with --code-loc 0x180 --data-loc X
+;    X=0  -> global vars will be placed immediately after code
+;    X!=0 -> global vars will be placed at address X
+;            (make sure that X>0x100+code size)
 
+	.module crt0_MSXDOSadv
 	.globl	_main
 
 	.globl  l__INITIALIZER
@@ -18,9 +22,9 @@
 
 	.org    0x0100			;MSX-DOS .COM programs start address
 
+init:
 	;--- Step 1: Initialize globals
-
-init:   call    gsinit
+	call    gsinit
 
 	;--- Step 2: Build the parameter pointers table on 0x100,
 	;    and terminate each parameter with 0.
@@ -28,15 +32,13 @@ init:   call    gsinit
 	;    and the command line itself at 0x81 (up to 127 characters).
 
 	;* Check if there are any parameters at all
-
 	ld      a,(#0x80)
 	or      a
-	ld      c,#0
-	jr      z,cont
+	ld      e,a
+	jr      z,cont     ;if there are no parameters goto cont
 	
 	;* Terminate command line with 0
 	;  (DOS 2 does this automatically but DOS 1 does not)
-	
 	ld      hl,#0x81
 	ld      bc,(#0x80)
 	ld      b,#0
@@ -49,20 +51,18 @@ init:   call    gsinit
 	;  (The space from 0x100 up to "cont" can be used,
 	;   this is room for about 40 parameters.
 	;   No real world application will handle so many parameters.)
-
 	ld      hl,#parloop
 	ld      de,#0xC000
 	ld      bc,#parloopend-#parloop
 	ldir
 
 	;* Initialize registers and jump to the loop routine
-
 	ld      hl,#0x81		;Command line pointer
-	ld      c,#0			;Number of params found
+	ld      e,#0			;Number of params found
 	ld      ix,#0x100		;Params table pointer
 
-	ld      de,#cont		;To continue execution at "cont"
-	push    de				;when the routine RETs
+	ld      bc,#cont		;To continue execution at "cont"
+	push    bc				;when the routine RETs
 	jp      0xC000
 
 	;>>> Command line processing routine begin
@@ -86,9 +86,9 @@ parfnd:
 	ld      1(ix),h
 	inc     ix
 	inc     ix
-	inc     c
+	inc     e
 
-	ld      a,c				;protection against too many parameters
+	ld      a,e				;protection against too many parameters
 	cp      #40
 	ret     nc
 
@@ -109,7 +109,6 @@ parloop2:
 nospc:
 	inc     hl
 	jr      parloop2
-
 parloopend:
 
 	;>>> Command line processing routine end
@@ -117,37 +116,31 @@ parloopend:
 	;* Command line processing done. Here, C=number of parameters.
 
 cont:
-	ld      hl,#0x100
-	ld      b,#0
-	push    bc				;Pass info as parameters to "main"
-	push    hl
-
 	;--- Step 3: Call the "main" function
-	push de
-	ld de,#_HEAP_start
-	ld (_heap_top),de
-	pop de
+	ld      bc,#_HEAP_start
+	ld      (_heap_top),bc
 
+	ld      a,e				;char argc
+	ld      de,#0x100		;char **argv
 	call    _main
 
 	;--- Step 4: Program termination.
 	;    Termination code for DOS 2 was returned on L.
-
 	ld      c,#0x62			;DOS 2 function for program termination (_TERM)
-	ld      b,l
+	ld      b,a
 	call    5				;On DOS 2 this terminates; on DOS 1 this returns...
 	ld      c,#0x00
 	jp      5				;...and then this one terminates
 							;(DOS 1 function for program termination).
+
+_unapiBuffer::
+	.ds 1600
 
 	;--- Program code and data (global vars) start here
 
 	;* Place data after program code, and data init code after data
 
 	.area	_CODE
-_unapiBuffer::
-	.ds 3600
-
 	.area	_DATA
 _heap_top::
 	.dw 0
@@ -168,9 +161,9 @@ gsinext:
 	;* These doesn't seem to be necessary... (?)
 
 	;.area  _OVERLAY
-	;.area	_HOME
+	.area	_HOME
 	;.area  _BSS
-
+	.area	_INITIALIZED
 	.area	_HEAP
 
 _HEAP_start::

@@ -7,9 +7,7 @@
 ;	.macro DEBUG_BREAKPOINT
 DEBUG_BREAKPOINT::
 _DEBUG_BREAKPOINT::
-		push af
 		out (0x18),a
-		pop af
 ;	.endm
 	ret
 

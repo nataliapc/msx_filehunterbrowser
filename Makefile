@@ -51,7 +51,7 @@ DEBUG := -D_DEBUG_
 LDFLAGS = -rc
 OPFLAGS = --std-sdcc2x --less-pedantic --opt-code-size -pragma-define:CRT_ENABLE_STDIO=0
 WRFLAGS = --disable-warning 196 --disable-warning 84
-CCFLAGS = --code-loc 0x0180 --data-loc 0 -mz80 --no-std-crt0 --out-fmt-ihx $(OPFLAGS) $(WRFLAGS) $(DEFINES) $(DEBUG)
+CCFLAGS = --code-loc 0x07c0 --data-loc 0 -mz80 --no-std-crt0 --out-fmt-ihx $(OPFLAGS) $(WRFLAGS) $(DEFINES) $(DEBUG)
 
 
 LIBS = dos.lib conio.lib unapi_tcpip.lib utils.lib vdp.lib

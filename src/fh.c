@@ -72,7 +72,7 @@ void initializeBuffers()
 	if (heap_top < (void*)0x8000)
 		heap_top = (void*)0x8000;
 
-	// Initialize buffers
+	// Assign buffers
 	list_start = (ListItem_t*)malloc(sizeof(ListItem_t) * 255);
 	buff = malloc(80*20);
 }
@@ -142,7 +142,7 @@ void putstrxy(uint8_t x, uint8_t y, char *str)
 
 // ========================================================
 uint32_t fileSize = 0;
-char progressChar[] = {'\x84', '\x85'};
+const char progressChar[] = {'\x84', '\x85'};
 uint8_t progress = 0;
 void HTTPStatusUpdate (bool isChunked)
 {
@@ -169,6 +169,8 @@ void getRemoteList()
 	heapPop();
 	heapPush();
 	list_raw = heap_top;
+//cprintf("\n %x %u ", heap_top, varTPALIMIT - heap_top);
+
 
 #ifdef _DEBUG_
 	uint16_t i = TEST_SIZE, size = 1024, pos = 0, cnt;
@@ -233,6 +235,7 @@ void processList()
 	ListItem_t *item = list_start;
 
 	while (*data) {
+//cprintf("\n %x %x ", item, data);
 		// Name
 		end = findStringEnd(data);
 		item->name = data;
@@ -584,7 +587,7 @@ void checkArguments(char **argv, int argc)
 }
 
 // ========================================================
-int main(char **argv, int argc) __sdcccall(0)
+char main(char argc, char **argv) __sdcccall(1)
 {
 	argv, argc;
 
@@ -594,13 +597,12 @@ int main(char **argv, int argc) __sdcccall(0)
 	//Platform system checks
 	checkPlatformSystem();
 
-	initializeBuffers();
 	heapPush();
+	initializeBuffers();
 
 	// Menu loop
 	menu_loop();
 
 	restoreScreen();
 	return 0;
-
 }

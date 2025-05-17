@@ -38,7 +38,7 @@ const ReqMSX_t reqMSX[] = {
 #define PANEL_CAS		2
 #define PANEL_VGM		3
 #define PANEL_LAST		PANEL_VGM
-Panel_t panels[] = {
+const Panel_t panels[] = {
 	{"[R]OM", &reqType[REQTYPE_ROM], 'r', 1},
 	{"[D]SK", &reqType[REQTYPE_DSK], 'd', 8},
 	{"[C]AS", &reqType[REQTYPE_CAS], 'c', 15},
@@ -53,4 +53,3 @@ Request_t request = {
 	{"maze"},
 	{""}
 };
-
