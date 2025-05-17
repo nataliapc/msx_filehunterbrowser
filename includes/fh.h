@@ -50,6 +50,6 @@ const Panel_t panels[] = {
 Request_t request = {
 	&reqType[REQTYPE_ROM],
 	&reqMSX[REQMSX_ALL],
-	{"maze"},
+	{"a"},
 	{""}
 };

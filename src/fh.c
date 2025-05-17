@@ -40,14 +40,18 @@ char *emptyArea;
 char *buff;
 ListItem_t *list_start;
 Panel_t *currentPanel;
-uint8_t itemsCount;
-uint8_t topLine = 0, currentLine = 0;
-uint8_t newTopLine = 0, newCurrentLine = 0;
+uint16_t itemsCount;
+uint16_t topLine = 0, currentLine = 0;
 
-#define UNAPI_BUFFER_SIZE	1600
+#define UNAPI_BUFFER_SIZE	(1600)
+#define LIST_START_SIZE		(sizeof(ListItem_t) * 512)
+#define BUFF_SIZE			(200)
+#define STACK_SIZE			(1024)
+#define DOWNLOAD_MAX_SIZE	(varTPALIMIT - STACK_SIZE - LIST_START_SIZE - BUFF_SIZE - heap_top)
 extern char unapiBuffer[UNAPI_BUFFER_SIZE];
 char *list_raw = NULL;
 uint32_t downloadSize;
+bool isDownloading = false;
 
 
 // ========================================================
@@ -73,8 +77,8 @@ void initializeBuffers()
 		heap_top = (void*)0x8000;
 
 	// Assign buffers
-	list_start = (ListItem_t*)malloc(sizeof(ListItem_t) * 255);
-	buff = malloc(80*20);
+	list_start = (ListItem_t*)malloc(LIST_START_SIZE);
+	buff = malloc(BUFF_SIZE);
 }
 
 void checkPlatformSystem()
@@ -146,14 +150,14 @@ const char progressChar[] = {'\x84', '\x85'};
 uint8_t progress = 0;
 void HTTPStatusUpdate (bool isChunked)
 {
-	gotoxy(79,1);
+	gotoxy(2,1);
 	putch(progressChar[progress]);
 	progress = (progress + 1) % sizeof(progressChar);
 }
 
 void DataWriteCallback(char *rcv_buffer, int bytes_read)
 {
-	if (bytes_read) {
+	if (bytes_read && isDownloading) {
 		memcpy(heap_top, rcv_buffer, bytes_read);
 		heap_top += bytes_read;
 	}
@@ -161,6 +165,12 @@ void DataWriteCallback(char *rcv_buffer, int bytes_read)
 
 void HGETFileSizeUpdate (long contentSize)
 {
+	if (contentSize > DOWNLOAD_MAX_SIZE) {
+		putstrxy(2,PANEL_FIRSTY, "List too long, please refine your search!");
+		putchar('\x07');
+		isDownloading = false;
+		*list_raw = '\0';
+	}
 	downloadSize = contentSize;
 }
 
@@ -169,7 +179,7 @@ void getRemoteList()
 	heapPop();
 	heapPush();
 	list_raw = heap_top;
-//cprintf("\n %x %u ", heap_top, varTPALIMIT - heap_top);
+//cprintf("\n %x %x %u %u", heap_top, varTPALIMIT, varTPALIMIT - heap_top, DOWNLOAD_MAX_SIZE);
 
 
 #ifdef _DEBUG_
@@ -192,6 +202,7 @@ void getRemoteList()
 	}
 #else
 	csprintf(buff, BASEURL, request.type->value, request.msx->value, request.search.value, "");
+	isDownloading = true;
 	if (hget(
 		buff,							// URL
 		NULL,							// filename
@@ -206,6 +217,7 @@ void getRemoteList()
 	{
 		die("Failure!!!");
 	}
+	isDownloading = false;
 #endif
 //cprintf("Download complete! %lu    \n", downloadSize);
 //getchar();
@@ -213,7 +225,7 @@ void getRemoteList()
 	heap_top++;
 	initializeBuffers();
 
-	gotoxy(79,1);
+	gotoxy(2,1);
 	putch(progressChar[sizeof(progressChar)-1]);
 	progress = 0;
 }
@@ -288,7 +300,9 @@ void printDefaultFooter()
 
 void printLineCounter()
 {
-	csprintf(buff, "\x13 %u/%u \x14\x17\x17\x17\x17", topLine+currentLine+1, itemsCount);
+	csprintf(buff, "\x13 %u/%u \x14\x17\x17\x17\x17",
+		itemsCount ? topLine+currentLine+1 : 0,
+		itemsCount);
 	putstrxy(35,23, buff);
 }
 
@@ -296,7 +310,7 @@ void printHeader()
 {
 	textblink(1,1, 80, true);
 
-	putstrxy(2,1, "File-Hunter Browser "VERSIONAPP);
+	putstrxy(2,1, "\x85 File-Hunter Browser "VERSIONAPP);
 
 	for (uint8_t i=0; i<80; i++) {
 		setByteVRAM(3*80+i, 0x17);
@@ -366,15 +380,13 @@ void printList()
 
 void panelScrollUp()
 {
-	gettext(1,PANEL_FIRSTY+1, 80,PANEL_LASTY, buff);
-	puttext(1,PANEL_FIRSTY, 80,PANEL_LASTY-1, buff);
+	movetext(1,PANEL_FIRSTY+1, 80,PANEL_LASTY, 1,PANEL_FIRSTY);
 	_fillVRAM(0+(PANEL_LASTY-1)*80, 80, ' ');
 }
 
 void panelScrollDown()
 {
-	gettext(1,PANEL_FIRSTY, 80,PANEL_LASTY-1, buff);
-	puttext(1,PANEL_FIRSTY+1, 80,PANEL_LASTY, buff);
+	movetext(1,PANEL_FIRSTY, 80,PANEL_LASTY-1, 1,PANEL_FIRSTY+1);
 	_fillVRAM(0+(PANEL_FIRSTY-1)*80, 80, ' ');
 }
 
@@ -394,7 +406,7 @@ void selectPanel(Panel_t *panel)
 	ASM_EI; ASM_HALT;
 	printList();
 	printLineCounter();
-	setSelectedLine(currentLine, true);
+	if (itemsCount) setSelectedLine(currentLine, true);
 }
 
 // ========================================================

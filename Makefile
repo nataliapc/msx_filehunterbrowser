@@ -46,7 +46,7 @@ EMUSCRIPTS = -script $(ROOTDIR)/emulation/boot.tcl
 
 
 DEFINES := -D_DOSLIB_
-DEBUG := -D_DEBUG_
+#DEBUG := -D_DEBUG_
 #FULLOPT :=  --max-allocs-per-node 200000
 LDFLAGS = -rc
 OPFLAGS = --std-sdcc2x --less-pedantic --opt-code-size -pragma-define:CRT_ENABLE_STDIO=0
