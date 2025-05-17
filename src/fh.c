@@ -276,18 +276,20 @@ void processList()
 	itemsCount = item - list_start;
 }
 
-void updateList()
-{
-	// Clear list area
-	_fillVRAM(0+4*80, 18*80, ' ');
-
-	// Get remote list
-	getRemoteList();
-	processList();
-}
-
 
 // ========================================================
+void printUpdateMessage()
+{
+	fillBlink(1,11, 3,80, true);
+	putstrxy(31, 12, "Retrieving list...");
+}
+
+void removeUpdateMessage()
+{
+	_fillVRAM(0+11*80, 80, ' ');
+	fillBlink(1,11, 3,80, false);
+}
+
 void printDefaultFooter()
 {
 	putstrxy(48,24, "F1:Help  F5:Download  RET:Search");
@@ -391,6 +393,27 @@ void panelScrollDown()
 {
 	movetext(1,PANEL_FIRSTY, 80,PANEL_LASTY-1, 1,PANEL_FIRSTY+1);
 	_fillVRAM(0+(PANEL_FIRSTY-1)*80, 80, ' ');
+}
+
+void clearListArea()
+{
+	_fillVRAM(0+4*80, 18*80, ' ');
+}
+
+
+// ========================================================
+void updateList()
+{
+	// Clear list area
+	clearListArea();
+
+	printUpdateMessage();
+
+	// Get remote list
+	getRemoteList();
+	processList();
+
+	removeUpdateMessage();
 }
 
 void selectPanel(Panel_t *panel)

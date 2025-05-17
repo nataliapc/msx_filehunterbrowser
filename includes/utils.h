@@ -24,6 +24,7 @@ uint16_t loadFullFile(char *filename, void *destaddress);
 
 char* formatSize(char *dst, uint32_t size);
 void memncpy(char *dst, char *src, char c, uint16_t size);
+void fillBlink(uint8_t x, uint8_t y, uint8_t lines, uint8_t len, bool enabled);
 
 
 #define MODE_ANK		0
