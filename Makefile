@@ -84,7 +84,7 @@ $(LIBDIR)/dos.lib:
 	@$(LIB_GUARD)
 	@cp $(EXTERNALS)/sdcc_msxdos/lib/dos.lib $@
 	@cp $(EXTERNALS)/sdcc_msxdos/include/dos.h $(INCDIR)
-	@$(AR) -d $@ dos_cputs.c.rel dos_kbhit.c.rel dos_cprintf.c.rel ;
+	@$(AR) -d $@ dos_putchar.c.rel dos_cputs.c.rel dos_kbhit.c.rel dos_cprintf.c.rel ;
 
 #$(LIBDIR)/unapi_net.lib: $(patsubst $(SRCLIB)/%, $(OBJDIR)/%.rel, $(wildcard $(SRCLIB)/unapinet_*))
 #	@echo "$(COL_WHITE)######## Creating $@$(COL_RESET)"

@@ -46,7 +46,6 @@ const Panel_t panels[] = {
 	{"", NULL, 0, 0}
 };
 
-
 Request_t request = {
 	&reqType[REQTYPE_ROM],
 	&reqMSX[REQMSX_ALL],

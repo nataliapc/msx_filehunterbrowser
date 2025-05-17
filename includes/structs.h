@@ -40,6 +40,7 @@ typedef struct {
 	uint8_t    posx;
 } Panel_t;
 
+// Struct to hold a list item information
 typedef struct {
 	char     *name;			// Pointer to the name of the item
 	uint32_t  size;			// Parsed size

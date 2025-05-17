@@ -41,10 +41,10 @@ char *buff;
 ListItem_t *list_start;
 Panel_t *currentPanel;
 uint16_t itemsCount;
-uint16_t topLine = 0, currentLine = 0;
+int16_t topLine = 0, currentLine = 0;
 
 #define UNAPI_BUFFER_SIZE	(1600)
-#define LIST_START_SIZE		(sizeof(ListItem_t) * 512)
+#define LIST_START_SIZE		((sizeof(ListItem_t)) * 512)
 #define BUFF_SIZE			(200)
 #define STACK_SIZE			(1024)
 #define DOWNLOAD_MAX_SIZE	(varTPALIMIT - STACK_SIZE - LIST_START_SIZE - BUFF_SIZE - heap_top)
@@ -148,10 +148,10 @@ void putstrxy(uint8_t x, uint8_t y, char *str)
 uint32_t fileSize = 0;
 const char progressChar[] = {'\x84', '\x85'};
 uint8_t progress = 0;
-void HTTPStatusUpdate (bool isChunked)
+#define STATUS_PROGRESS_POS		1
+void HTTPStatusUpdate(bool isChunked)
 {
-	gotoxy(2,1);
-	putch(progressChar[progress]);
+	setByteVRAM(STATUS_PROGRESS_POS, progressChar[progress]);
 	progress = (progress + 1) % sizeof(progressChar);
 }
 
@@ -179,8 +179,8 @@ void getRemoteList()
 	heapPop();
 	heapPush();
 	list_raw = heap_top;
+	isDownloading = true;
 //cprintf("\n %x %x %u %u", heap_top, varTPALIMIT, varTPALIMIT - heap_top, DOWNLOAD_MAX_SIZE);
-
 
 #ifdef _DEBUG_
 	uint16_t i = TEST_SIZE, size = 1024, pos = 0, cnt;
@@ -196,13 +196,12 @@ void getRemoteList()
 		i -= size;
 
 		cnt = varJIFFY;
-		while (varJIFFY-cnt < 25) {
+		while (varJIFFY-cnt < 10) {
 			ASM_EI; ASM_HALT;
 		}
 	}
 #else
 	csprintf(buff, BASEURL, request.type->value, request.msx->value, request.search.value, "");
-	isDownloading = true;
 	if (hget(
 		buff,							// URL
 		NULL,							// filename
@@ -217,16 +216,15 @@ void getRemoteList()
 	{
 		die("Failure!!!");
 	}
-	isDownloading = false;
 #endif
 //cprintf("Download complete! %lu    \n", downloadSize);
 //getchar();
+	isDownloading = false;
 	*((char*)heap_top) = '\0';
 	heap_top++;
 	initializeBuffers();
 
-	gotoxy(2,1);
-	putch(progressChar[sizeof(progressChar)-1]);
+	setByteVRAM(STATUS_PROGRESS_POS, progressChar[sizeof(progressChar)-1]);
 	progress = 0;
 }
 
@@ -247,7 +245,6 @@ void processList()
 	ListItem_t *item = list_start;
 
 	while (*data) {
-//cprintf("\n %x %x ", item, data);
 		// Name
 		end = findStringEnd(data);
 		item->name = data;
@@ -271,8 +268,6 @@ void processList()
 			item->loadMethod = 0;
 		}
 
-//gotoxy(1,1); cprintf(" %x   ", item);
-//getchar();
 		item++;
 	}
 //cputs("DONE!!");
@@ -355,14 +350,22 @@ void setSelectedLine(uint8_t y, bool selected)
 
 void printItem(uint8_t y, ListItem_t *item)
 {
-	strncpy(buff, item->name, 64);
-	putstrxy(2, y, buff);
+	#define MAX_NAME_SIZE	70
+	#define ITEM_POS_LOAD	67
+	#define ITEM_POS_SIZE	78
+
+	memset(buff, ' ', 80);
+	buff[80] = '\0';
+
+	memncpy(buff, item->name, '\0', MAX_NAME_SIZE);
 	if (item->loadMethod) {
-		csprintf(buff, " (%c)", item->loadMethod);
-		putstrxy(67, y, buff);
+		csprintf(heap_top, " (%c)", item->loadMethod);
+		memncpy(&buff[ITEM_POS_LOAD], heap_top, '\0', 5);
 	}
-	csprintf(buff, "%lub", item->size);
-	putstrxy(74, y, buff);
+	formatSize(heap_top, item->size);
+	strcpy(&buff[ITEM_POS_SIZE-strlen(heap_top)], heap_top);
+
+	putstrxy(2,y, buff);
 }
 
 void printList()
@@ -410,7 +413,7 @@ void selectPanel(Panel_t *panel)
 }
 
 // ========================================================
-bool menu_loop()
+void menu_loop()
 {
 	// Disable kanji mode if needed
 	if (kanjiMode) {
@@ -429,17 +432,45 @@ bool menu_loop()
 	selectPanel(&panels[PANEL_FIRST]);
 
 	// Menu loop
-	bool end = false;
 	uint8_t key;
 
-	while (!end) {
+	while (true) {
 		// Wait for a pressed key
 		if (kbhit()) {
 			key = dos2_toupper(getchar());
 			switch (key) {
 				case KEY_ESC:
 				case 'X':
-					end = true;
+					return;
+				case KEY_RIGHT:
+					if (itemsCount) {
+						topLine += PANEL_HEIGHT + 1;
+						if (topLine + PANEL_HEIGHT + 1 >= itemsCount) {
+							setSelectedLine(currentLine, false);
+							if (PANEL_HEIGHT + 1 > itemsCount) {
+								topLine = 0;
+								currentLine = itemsCount - 1;
+							} else {
+								currentLine = PANEL_HEIGHT;
+								topLine = itemsCount - currentLine - 1;
+							}	
+							setSelectedLine(currentLine, true);
+						}
+						printList();
+						printLineCounter();
+					}
+					break;
+				case KEY_LEFT:
+					if (itemsCount) {
+						topLine -= PANEL_HEIGHT + 1;
+						if (topLine < 0) {
+							setSelectedLine(currentLine, false);
+							currentLine = topLine = 0;
+							setSelectedLine(currentLine, true);
+						}
+						printList();
+						printLineCounter();
+					}
 					break;
 				case KEY_UP:
 					if (currentLine > 0) {
@@ -520,7 +551,6 @@ bool menu_loop()
 			}
 		}
 	}
-	return true;
 }
 
 

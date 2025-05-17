@@ -21,7 +21,9 @@ void dzx0_standard(void *src, void *dst) __sdcccall(1);
 uint16_t loadFile(char *filename, void *destaddress, uint16_t size);
 uint16_t loadFullFile(char *filename, void *destaddress);
 
-void execv(char *execStr);
+
+char* formatSize(char *dst, uint32_t size);
+void memncpy(char *dst, char *src, char c, uint16_t size);
 
 
 #define MODE_ANK		0
