@@ -35,7 +35,7 @@ UNAPI_TCPIP: $(LIBDIR)/unapi_tcpip.lib
 
 $(LIBDIR)/unapi_tcpip.lib:
 	@echo "$(COL_YELLOW)######## Creating $@$(COL_RESET)"
-	@$(MAKE) -C UNAPI_TCPIP
+	@$(MAKE) -j -C UNAPI_TCPIP
 	@cp UNAPI_TCPIP/libs/unapi_tcpip.lib $(LIBDIR)
 	@cp UNAPI_TCPIP/includes/hgetlib.h $(INCDIR)
 
