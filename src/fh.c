@@ -19,13 +19,38 @@
 #include "hgetlib.h"
 #include "fh.h"
 #include "patterns.h"
+#include "structs.h"
+#include "mod_downloadFiles.h"
+#include "mod_searchString.h"
 #ifdef _DEBUG_
 	#include "test.h"
 #endif
 
-#define PANEL_FIRSTY	5
-#define PANEL_LASTY		22
-#define PANEL_HEIGHT	(PANEL_LASTY-PANEL_FIRSTY)
+
+// ========================================================
+const ReqType_t reqType[] = {
+	{""}, {"rom"}, {"dsk"}, {"cas"}, {"vgm"}
+};
+
+const ReqMSX_t reqMSX[] = {
+	{"All",""}, {"1  ","1"}, {"2  ","2"}, {"2+ ","2+"}, {"TR ","turbo-r"}, {"",""}
+};
+
+const Panel_t panels[] = {
+	{"[R]OM", &reqType[REQTYPE_ROM], 'r', 1},
+	{"[D]SK", &reqType[REQTYPE_DSK], 'd', 8},
+	{"[C]AS", &reqType[REQTYPE_CAS], 'c', 15},
+	{"[V]GM", &reqType[REQTYPE_VGM], 'v', 22},
+	{"", NULL, 0, 0}
+};
+
+Request_t request = {
+	&reqType[REQTYPE_ROM],
+	&reqMSX[REQMSX_ALL],
+	{"a"},
+	{""}
+};
+
 
 // ========================================================
 static uint8_t msxVersionROM;
@@ -36,31 +61,23 @@ static uint8_t originalFORCLR;
 static uint8_t originalBAKCLR;
 static uint8_t originalBDRCLR;
 
-char *emptyArea;
 char *buff;
 ListItem_t *list_start;
 Panel_t *currentPanel;
-uint16_t itemsCount;
-int16_t topLine = 0, currentLine = 0;
+int16_t itemsCount;
+int16_t topLine, currentLine;
+
 
 #define UNAPI_BUFFER_SIZE	(1600)
 #define LIST_START_SIZE		((sizeof(ListItem_t)) * 512)
 #define BUFF_SIZE			(200)
 #define STACK_SIZE			(1024)
 #define DOWNLOAD_MAX_SIZE	(varTPALIMIT - STACK_SIZE - LIST_START_SIZE - BUFF_SIZE - heap_top)
-extern char unapiBuffer[UNAPI_BUFFER_SIZE];
+extern char *unapiBuffer;
 char *list_raw = NULL;
 uint32_t downloadSize;
 bool isDownloading = false;
-
-
-// ========================================================
-// Function declarations
-
-void restoreScreen();
-void setByteVRAM(uint16_t vram, uint8_t value) __sdcccall(0);
-void _fillVRAM(uint16_t vram, uint16_t len, uint8_t value) __sdcccall(0);
-void _copyRAMtoVRAM(uint16_t memory, uint16_t vram, uint16_t size) __sdcccall(0);
+bool listTooLong = false;
 
 
 // ========================================================
@@ -130,7 +147,7 @@ inline void redefineFunctionKeys()
 
 inline void redefineCharPatterns()
 {
-	_copyRAMtoVRAM((uint16_t)charPatters, 0x1000+24*8, 2*8);
+	_copyRAMtoVRAM((uint16_t)charPatters, 0x1000+24*8, 6*8);
 }
 
 inline bool isShiftKeyPressed()
@@ -138,19 +155,16 @@ inline bool isShiftKeyPressed()
 	return varNEWKEY_row6.shift == 0;
 }
 
-void putstrxy(uint8_t x, uint8_t y, char *str)
-{
-	putlinexy(x, y, strlen(str), str);
-}
-
 
 // ========================================================
 uint32_t fileSize = 0;
-const char progressChar[] = {'\x84', '\x85'};
+const char progressChar[] = {'\x1c', '\x1d'};
 uint8_t progress = 0;
 #define STATUS_PROGRESS_POS		1
 void HTTPStatusUpdate(bool isChunked)
 {
+	isChunked;
+
 	setByteVRAM(STATUS_PROGRESS_POS, progressChar[progress]);
 	progress = (progress + 1) % sizeof(progressChar);
 }
@@ -166,8 +180,9 @@ void DataWriteCallback(char *rcv_buffer, int bytes_read)
 void HGETFileSizeUpdate (long contentSize)
 {
 	if (contentSize > DOWNLOAD_MAX_SIZE) {
-		putstrxy(2,PANEL_FIRSTY, "List too long, please refine your search!");
+		putstrxy(2,PANEL_FIRSTY, "List too long, press ENTER and refine your search!");
 		putchar('\x07');
+		listTooLong = true;
 		isDownloading = false;
 		*list_raw = '\0';
 	}
@@ -179,8 +194,14 @@ void getRemoteList()
 	heapPop();
 	heapPush();
 	list_raw = heap_top;
+	listTooLong = false;
 	isDownloading = true;
-//cprintf("\n %x %x %u %u", heap_top, varTPALIMIT, varTPALIMIT - heap_top, DOWNLOAD_MAX_SIZE);
+
+	char *buffSearch = (char*)malloc(SEARCH_MAX_SIZE + 1);
+	strcpy(buffSearch, request.search.value);
+	strReplaceChar(buffSearch, ' ', '+');
+	csprintf(buff, BASEURL, request.type->value, request.msx->value, buffSearch, "");
+	free(SEARCH_MAX_SIZE + 1);
 
 #ifdef _DEBUG_
 	uint16_t i = TEST_SIZE, size = 1024, pos = 0, cnt;
@@ -201,24 +222,22 @@ void getRemoteList()
 		}
 	}
 #else
-	csprintf(buff, BASEURL, request.type->value, request.msx->value, request.search.value, "");
 	if (hget(
-		buff,							// URL
-		NULL,							// filename
-		NULL,							// credent
-		(int)HTTPStatusUpdate,			// progress_callback
-		0,								// rcvbuffer
-		NULL,//(char*)(varTPALIMIT-4096),		// rcvbuffersize
-		(int)DataWriteCallback,			// data_write_callback
-		(int)HGETFileSizeUpdate,		// content_size_callback
-		false							// enableKeepAlive
+		buff,						// URL
+		NULL,						// filename
+		NULL,						// credent
+		(int)HTTPStatusUpdate,		// progress_callback
+		0,							// rcvbuffer
+		0,							// rcvbuffersize
+		(int)DataWriteCallback,		// data_write_callback
+		(int)HGETFileSizeUpdate,	// content_size_callback
+		false						// enableKeepAlive
 	) != ERR_TCPIPUNAPI_OK)
 	{
-		die("Failure!!!");
+		putstrxy(2,PANEL_FIRSTY, "Error retrieving list! Try again.");
+		putchar('\x07');
 	}
 #endif
-//cprintf("Download complete! %lu    \n", downloadSize);
-//getchar();
 	isDownloading = false;
 	*((char*)heap_top) = '\0';
 	heap_top++;
@@ -270,24 +289,23 @@ void processList()
 
 		item++;
 	}
-//cputs("DONE!!");
-//getchar();
 	item->name = NULL;
 	itemsCount = item - list_start;
 }
 
 
 // ========================================================
-void printUpdateMessage()
+#define UPDATING_POSY	11
+void printUpdatingListMessage()
 {
-	fillBlink(1,11, 3,80, true);
-	putstrxy(31, 12, "Retrieving list...");
+	fillBlink(1,UPDATING_POSY, 3,80, true);
+	putstrxy(31, UPDATING_POSY+1, "Retrieving list...");
 }
 
 void removeUpdateMessage()
 {
-	_fillVRAM(0+11*80, 80, ' ');
-	fillBlink(1,11, 3,80, false);
+	_fillVRAM(0+UPDATING_POSY*80, 80, ' ');
+	fillBlink(1,UPDATING_POSY, 3,80, false);
 }
 
 void printDefaultFooter()
@@ -338,16 +356,24 @@ void printTabs()
 void printRequestData()
 {
 	csprintf(buff, "[M]SX:%s", request.msx->name);
-	putstrxy(62, 3, buff);
-	csprintf(buff, "[C]char:%c", dos2_toupper(request.search.value[0]));
-	putstrxy(72, 3, buff);
-	csprintf(buff, "Search:\"%s\"", request.search.value);
+	putstrxy(71, 3, buff);
+
+	memset(buff, ' ', SEARCH_MAX_SIZE);
+	buff[SEARCH_MAX_SIZE] = '\0';
+	putstrxy(9,24, buff);
+
+	csprintf(buff, "Search:%s", request.search.value);
 	putstrxy(2, 24, buff);
 }
 
-void setSelectedLine(uint8_t y, bool selected)
+void resetSelectedLine()
 {
-	textblink(1, PANEL_FIRSTY+y, 80, selected);
+	currentLine = topLine = 0;
+}
+
+void setSelectedLine(bool selected)
+{
+	textblink(1, PANEL_FIRSTY+currentLine, 80, selected);
 }
 
 void printItem(uint8_t y, ListItem_t *item)
@@ -372,6 +398,8 @@ void printItem(uint8_t y, ListItem_t *item)
 
 void printList()
 {
+	if (itemsCount == 0) return;
+
 	ListItem_t *item = list_start + topLine;
 	uint8_t y = 5;
 
@@ -402,18 +430,34 @@ void clearListArea()
 
 
 // ========================================================
+ListItem_t* getCurrentItem()
+{
+	return list_start + topLine + currentLine;
+}
+
 void updateList()
 {
+	ASM_EI; ASM_HALT;
+	setSelectedLine(false);
+	resetSelectedLine();
+
 	// Clear list area
 	clearListArea();
 
-	printUpdateMessage();
+	printUpdatingListMessage();
 
 	// Get remote list
 	getRemoteList();
 	processList();
+	if (itemsCount == 0 && !listTooLong) {
+		putstrxy(2,PANEL_FIRSTY+1, "Empty list!");
+	}
 
+	ASM_EI; ASM_HALT;
 	removeUpdateMessage();
+	printList();
+	printLineCounter();
+	if (itemsCount) setSelectedLine(true);
 }
 
 void selectPanel(Panel_t *panel)
@@ -422,17 +466,10 @@ void selectPanel(Panel_t *panel)
 	request.type = panel->type;
 
 	ASM_EI; ASM_HALT;
-	setSelectedLine(currentLine, false);
-	currentLine = topLine = 0;
 	printTabs();
 	printRequestData();
 
 	updateList();
-
-	ASM_EI; ASM_HALT;
-	printList();
-	printLineCounter();
-	if (itemsCount) setSelectedLine(currentLine, true);
 }
 
 // ========================================================
@@ -456,57 +493,22 @@ void menu_loop()
 
 	// Menu loop
 	int8_t  newPanel = PANEL_NONE;
-	uint8_t key;
+	bool end = false;
 
-	while (true) {
+	while (!end) {
 		// Wait for a pressed key
+		ASM_EI; ASM_HALT;
 		if (kbhit()) {
-			key = dos2_toupper(getchar());
-			switch (key) {
-				case KEY_ESC:
-				case 'X':
-					return;
-				case KEY_RIGHT:
-					if (itemsCount) {
-						topLine += PANEL_HEIGHT + 1;
-						if (topLine + PANEL_HEIGHT + 1 >= itemsCount) {
-							setSelectedLine(currentLine, false);
-							if (PANEL_HEIGHT + 1 > itemsCount) {
-								topLine = 0;
-								currentLine = itemsCount - 1;
-							} else {
-								currentLine = PANEL_HEIGHT;
-								topLine = itemsCount - currentLine - 1;
-							}	
-							setSelectedLine(currentLine, true);
-						}
-						printList();
-						printLineCounter();
-					}
-					break;
-				case KEY_LEFT:
-					if (itemsCount) {
-						topLine -= PANEL_HEIGHT + 1;
-						if (topLine < 0) {
-							setSelectedLine(currentLine, false);
-							currentLine = topLine = 0;
-							setSelectedLine(currentLine, true);
-						}
-						printList();
-						printLineCounter();
-					}
-					break;
+			switch(dos2_toupper(getch())) {
 				case KEY_UP:
 					if (currentLine > 0) {
-						ASM_EI; ASM_HALT;
-						setSelectedLine(currentLine, false);
+						setSelectedLine(false);
 						currentLine--;
-						setSelectedLine(currentLine, true);
+						setSelectedLine(true);
 						printLineCounter();
 					} else {
 						if (topLine > 0) {
 							topLine--;
-							ASM_EI; ASM_HALT;
 							panelScrollDown();
 							printItem(PANEL_FIRSTY, list_start + topLine);
 							printLineCounter();
@@ -514,22 +516,50 @@ void menu_loop()
 					}
 					break;
 				case KEY_DOWN:
-					if (currentLine + topLine + 1 >= itemsCount)
-						break;
-					if (currentLine < PANEL_HEIGHT) {
-						ASM_EI; ASM_HALT;
-						setSelectedLine(currentLine, false);
-						currentLine++;
-						setSelectedLine(currentLine, true);
-						printLineCounter();
-					} else {
-						if (topLine + currentLine < itemsCount - 1) {
-							topLine++;
-							ASM_EI; ASM_HALT;
-							panelScrollUp();
-							printItem(PANEL_LASTY, list_start + topLine + currentLine);
+					if (currentLine + topLine + 1 < itemsCount) {
+						if (currentLine < PANEL_HEIGHT - 1) {
+							setSelectedLine(false);
+							currentLine++;
+							setSelectedLine(true);
 							printLineCounter();
+						} else {
+							if (topLine + currentLine + 1 < itemsCount) {
+								topLine++;
+								panelScrollUp();
+								printItem(PANEL_LASTY, list_start + topLine + currentLine);
+								printLineCounter();
+							}
 						}
+					}
+					break;
+				case KEY_RIGHT:
+					if (itemsCount) {
+						topLine += PANEL_HEIGHT;
+						if (topLine + PANEL_HEIGHT >= itemsCount) {
+							setSelectedLine(false);
+							if (PANEL_HEIGHT > itemsCount) {
+								topLine = 0;
+								currentLine = itemsCount - 1;
+							} else {
+								currentLine = PANEL_HEIGHT - 1;
+								topLine = itemsCount - currentLine - 1;
+							}	
+							setSelectedLine(true);
+						}
+						printList();
+						printLineCounter();
+					}
+					break;
+				case KEY_LEFT:
+					if (itemsCount) {
+						topLine -= PANEL_HEIGHT;
+						if (topLine < 0) {
+							setSelectedLine(false);
+							resetSelectedLine();
+							setSelectedLine(true);
+						}
+						printList();
+						printLineCounter();
 					}
 					break;
 				case KEY_TAB:
@@ -548,26 +578,32 @@ void menu_loop()
 					selectPanel(currentPanel);
 					break;
 				case 'R':
-					newPanel = PANEL_ROM;
-					break;
+					newPanel = PANEL_ROM; break;
 				case 'D':
-					newPanel = PANEL_DSK;
-					break;
+					newPanel = PANEL_DSK; break;
 				case 'C':
-					newPanel = PANEL_CAS;
-					break;
+					newPanel = PANEL_CAS; break;
 				case 'V':
-					newPanel = PANEL_VGM;
-					break;
+					newPanel = PANEL_VGM; break;
 				case 'M':
+					request.msx++;
+					if (request.msx->name[0] == 0) {
+						request.msx = &reqMSX[REQMSX_ALL];
+					}
+					selectPanel(currentPanel);
 					break;
 				case KEY_RETURN:
+					changeSearchString();
 					break;
 				case '1':
+					// TODO: #################### help dialog
 					break;
 				case '5':
 				case KEY_SELECT:
+					downloadFile();
 					break;
+				case KEY_ESC:
+					end++;
 			}
 			if (newPanel != PANEL_NONE) {
 				if (currentPanel != &panels[newPanel]) {
@@ -600,6 +636,9 @@ void restoreOriginalScreenMode() __naked
 
 void restoreScreen()
 {
+	// Finish HGET library
+	hgetfinish();
+
 	// Clear & restore original screen parameters & colors
 	__asm
 		ld   ix, #DISSCR				; Disable screen
@@ -631,9 +670,6 @@ void restoreScreen()
 
 	// Restore abort routine
 	dos2_setAbortRoutine((void*)0x0000);
-
-	// Finish HGET library
-	hgetfinish();
 }
 
 void printHelp()
@@ -656,7 +692,7 @@ void checkArguments(char **argv, int argc)
 }
 
 // ========================================================
-char main(char argc, char **argv) __sdcccall(1)
+int main(char **argv, int argc) __sdcccall(0)
 {
 	argv, argc;
 

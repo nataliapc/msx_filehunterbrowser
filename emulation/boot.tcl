@@ -30,3 +30,29 @@ plug joyportb mouse
 
 # Plug a Simple/Covox Module in the Printer Port. Default Audio output used
 plug printerport simpl
+
+if {false} {
+	# scripts/cargar_sym.tcl - Script Tcl de inicio para openMSX
+	# Ruta del archivo .sym generado (relativa al directorio actual)
+	set symFile [file join [pwd] "obj/program.sym"]
+
+	# Si el archivo existe, procedemos a procesarlo
+	if {[file exists $symFile]} {
+		puts "Cargando símbolos desde $symFile..."
+		# Abrir el archivo de símbolos para leer
+		set fp [open $symFile r]
+		while {[gets $fp line] >= 0} {
+			# Buscar líneas con formato "Etiqueta: equ XXXXh"
+			if {[regexp {^([\w\.]+):\s+equ\s+([0-9A-Fa-f]+)H} $line -> etiqueta direccionHex]} {
+				# Convertir la dirección hexadecimal (sin la 'H' final) a número
+				scan $direccionHex %x addr
+				# Añadir un watch de RAM en esa dirección con la etiqueta como descripción
+				ram_watch add $addr -desc $etiqueta -type word
+			}
+		}
+		close $fp
+		puts "Archivo .sym cargado en openMSX."
+	} else {
+		puts "Archivo $symFile no encontrado."
+	}
+}

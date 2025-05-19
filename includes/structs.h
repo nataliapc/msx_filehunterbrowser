@@ -20,8 +20,9 @@ typedef struct {
 } ReqMSX_t;
 
 // Struct to hold the search term
+#define SEARCH_MAX_SIZE		30
 typedef struct {
-	char value[20];
+	char value[SEARCH_MAX_SIZE+1];
 } ReqSearch_t;
 
 // Struct to hold the full request

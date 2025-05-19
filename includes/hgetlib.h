@@ -65,15 +65,15 @@
 
 #define HGET_AGENT "User-Agent: MSX_HGETLIB (MSX-DOS)\r\n"
 
-#ifndef bool
-typedef unsigned char bool;
-#endif
-#ifndef false
-#define false (0)
-#endif
-#ifndef true
-#define true (!false)
-#endif
+//#ifndef bool
+//typedef unsigned char bool;
+//#endif
+//#ifndef false
+//#define false (0)
+//#endif
+//#ifndef true
+//#define true (!false)
+//#endif
 
 enum HgetReturnCodes {
     ERR_TCPIPUNAPI_OK = 0,

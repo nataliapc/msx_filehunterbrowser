@@ -23,6 +23,7 @@ DSKDIR = $(ROOTDIR)/dsk
 EXTERNALS = $(ROOTDIR)/externals
 LIB_GUARD=@mkdir -p $(LIBDIR)
 
+SDCC_VER := 4.2.0
 MAKE = make -s --no-print-directory
 
 
@@ -35,7 +36,7 @@ UNAPI_TCPIP: $(LIBDIR)/unapi_tcpip.lib
 
 $(LIBDIR)/unapi_tcpip.lib:
 	@echo "$(COL_YELLOW)######## Creating $@$(COL_RESET)"
-	@$(MAKE) -j -C UNAPI_TCPIP
+	@$(MAKE) -j -C UNAPI_TCPIP SDCC_VER=$(SDCC_VER)
 	@cp UNAPI_TCPIP/libs/unapi_tcpip.lib $(LIBDIR)
 	@cp UNAPI_TCPIP/includes/hgetlib.h $(INCDIR)
 

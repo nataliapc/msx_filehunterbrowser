@@ -10,8 +10,13 @@
 #include "structs.h"
 
 
-#define VERSIONAPP		"0.1.0"
+#define VERSIONAPP		"0.2.0"
 #define BASEURL			"http://api.file-hunter.com/index3.php?type=%s&msx=%s&char=%s&download=%s"
+
+
+#define PANEL_FIRSTY	5
+#define PANEL_LASTY		22
+#define PANEL_HEIGHT	(PANEL_LASTY - PANEL_FIRSTY + 1)
 
 
 #define REQTYPE_ALL		0
@@ -19,18 +24,14 @@
 #define REQTYPE_DSK		2
 #define REQTYPE_CAS		3
 #define REQTYPE_VGM		4
-const ReqType_t reqType[] = {
-	{""}, {"rom"}, {"dsk"}, {"cas"}, {"vgm"}
-};
+extern const ReqType_t reqType[];
 
 #define REQMSX_ALL		0
 #define REQMSX_MSX1		1
 #define REQMSX_MSX2		2
 #define REQMSX_MSX2P	3
 #define REQMSX_MSXTR	4
-const ReqMSX_t reqMSX[] = {
-	{"All",""}, {"1  ","1"}, {"2  ","2"}, {"2+ ","2+"}, {"TR ","turbo-r"}
-};
+extern const ReqMSX_t reqMSX[];
 
 #define PANEL_NONE		-1
 #define PANEL_FIRST		PANEL_ROM
@@ -39,17 +40,25 @@ const ReqMSX_t reqMSX[] = {
 #define PANEL_CAS		2
 #define PANEL_VGM		3
 #define PANEL_LAST		PANEL_VGM
-const Panel_t panels[] = {
-	{"[R]OM", &reqType[REQTYPE_ROM], 'r', 1},
-	{"[D]SK", &reqType[REQTYPE_DSK], 'd', 8},
-	{"[C]AS", &reqType[REQTYPE_CAS], 'c', 15},
-	{"[V]GM", &reqType[REQTYPE_VGM], 'v', 22},
-	{"", NULL, 0, 0}
-};
+extern const Panel_t panels[];
 
-Request_t request = {
-	&reqType[REQTYPE_ROM],
-	&reqMSX[REQMSX_ALL],
-	{"a"},
-	{""}
-};
+extern Request_t request;
+
+extern char *buff;
+extern ListItem_t *list_start;
+
+
+// ========================================================
+// Function declarations
+
+void setByteVRAM(uint16_t vram, uint8_t value) __sdcccall(0);
+void _fillVRAM(uint16_t vram, uint16_t len, uint8_t value) __sdcccall(0);
+void _copyRAMtoVRAM(uint16_t memory, uint16_t vram, uint16_t size) __sdcccall(0);
+void restoreScreen();
+
+void resetSelectedLine();
+void setSelectedLine(bool selected);
+void updateList();
+void printList();
+void printRequestData();
+ListItem_t* getCurrentItem();

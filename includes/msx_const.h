@@ -18,9 +18,13 @@
 #define JP_BIOSCALL	ld iy,(#EXPTBL-1) \
                    	jp CALSLT
 
-#define ASM_HALT	__asm halt __endasm;
-#define ASM_DI		__asm di __endasm;
-#define ASM_EI		__asm ei __endasm;
+#define ASM_HALT		__asm halt __endasm;
+#define ASM_DI			__asm di __endasm;
+#define ASM_EI			__asm ei __endasm;
+#define halt()			ASM_HALT
+#define di()			ASM_DI
+#define ei()			ASM_EI
+#define breakpoint()	__asm out(0x18),a __endasm;
 
 #define ADDR_POINTER_BYTE(X)	(*((uint8_t*)X))
 #define ADDR_POINTER_WORD(X)	(*((uint16_t*)X))

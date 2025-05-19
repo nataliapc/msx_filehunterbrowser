@@ -60,6 +60,8 @@ REL_LIBS = 	$(addprefix $(LIBDIR)/, $(LIBS)) \
 				crt0msx_msxdos_advanced.rel \
 				heap.rel \
 				debug.rel \
+				mod_downloadFiles.rel \
+				mod_searchString.rel \
 				fh.rel \
 			)
 
@@ -70,17 +72,16 @@ DSKNAME = $(PROGRAM).dsk
 all: contrib $(OBJDIR)/$(PROGRAM).com release
 
 contrib:
-	@$(MAKE) -C $(CONTRIB) all
+	@$(MAKE) -C $(CONTRIB) all SDCC_VER=$(SDCC_VER)
 
 $(LIBDIR)/conio.lib:
-	@$(MAKE) -C $(EXTERNALS)/sdcc_msxconio all SDCC_VER=$(SDCC_VER) DEFINES=-DXXXXX
+	@$(MAKE) -j -C $(EXTERNALS)/sdcc_msxconio all SDCC_VER=$(SDCC_VER) DEFINES=-DXXXXX
 	@$(LIB_GUARD)
 	@cp $(EXTERNALS)/sdcc_msxconio/lib/conio.lib $@
 	@cp $(EXTERNALS)/sdcc_msxconio/include/conio.h $(INCDIR)
-#	@$(AR) -d $@ dos_cputs.c.rel ;
 
 $(LIBDIR)/dos.lib:
-	@$(MAKE) -C $(EXTERNALS)/sdcc_msxdos all SDCC_VER=$(SDCC_VER) DEFINES=-DDISABLE_CONIO
+	@$(MAKE) -j -C $(EXTERNALS)/sdcc_msxdos all SDCC_VER=$(SDCC_VER) DEFINES=-DDISABLE_CONIO
 	@$(LIB_GUARD)
 	@cp $(EXTERNALS)/sdcc_msxdos/lib/dos.lib $@
 	@cp $(EXTERNALS)/sdcc_msxdos/include/dos.h $(INCDIR)
@@ -167,11 +168,15 @@ cleanlibs:
 	@echo "$(COL_ORANGE)#### Cleaning libs$(COL_RESET)"
 	@rm -f $(addprefix $(LIBDIR)/, $(LIBS))
 	@$(MAKE) -C $(EXTERNALS)/sdcc_msxdos clean
+	@$(MAKE) -C $(EXTERNALS)/sdcc_msxconio clean
+	@$(MAKE) -C $(CONTRIB) clean
 
 
 ###################################################################################################
 
 test: all
+	@$(BINDIR)/create_sym_debug.py $(OBJDIR)/$(PROGRAM)
+	@mv $(OBJDIR)/$(PROGRAM)_opmdeb.sym $(OBJDIR)/program.sym
 	@bash -c 'if pgrep -x "openmsx" > /dev/null \
 	; then \
 		echo "**** openmsx already running..." \

@@ -23,6 +23,7 @@
 
 #ifndef HGET_H
 #define HGET_H
+
 #define _TERM0 0
 #define _CONIN 1
 #define _INNOE 8
@@ -110,40 +111,40 @@ enum TcpipErrorCodes {
 #define strDefaultFilename "index.htm";
 
 /* Global Variables */
-byte continue_using_keep_alive = 0;
-byte fileHandle = 0;
-byte conn = 0;
-char* credentials;
-char* domainName;
-char localFileName[128];
-byte continueReceived;
-byte redirectionRequested = 0;
-byte authenticationRequested;
-byte authenticationSent;
-int remainingInputData = 0;
-byte* inputDataPointer;
-byte emptyLineReaded;
-long contentLength,blockSize,currentBlock;
-int isChunkedTransfer;
-long currentChunkSize = 0;
-int newLocationReceived;
-long receivedLength = 0;
-byte* TcpInputData;
+static byte continue_using_keep_alive = 0;
+static byte fileHandle = 0;
+static byte conn = 0;
+static char* credentials;
+static char* domainName;
+static char localFileName[128];
+static byte continueReceived;
+static byte redirectionRequested = 0;
+static byte authenticationRequested;
+static byte authenticationSent;
+static int remainingInputData = 0;
+static byte* inputDataPointer;
+static byte emptyLineReaded;
+static long contentLength,blockSize,currentBlock;
+static int isChunkedTransfer;
+static long currentChunkSize = 0;
+static int newLocationReceived;
+static long receivedLength = 0;
+static byte* TcpInputData;
 #define TcpOutputData TcpInputData
-byte remoteFilePath[256];
-byte headerLine[256];
-char statusLine[256];
-char redirectionFullLocation[256];
-int responseStatusCode;
-int responseStatusCodeFirstDigit;
-char* headerTitle;
-char* headerContents;
-Z80_registers reg;
-unapi_code_block* codeBlock;
-int ticksWaited;
-int sysTimerHold;
-byte redirectionUrlIsNewDomainName;
-bool zeroContentLengthAnnounced;
+static byte remoteFilePath[256];
+static byte headerLine[256];
+static char statusLine[256];
+static char redirectionFullLocation[256];
+static int responseStatusCode;
+static int responseStatusCodeFirstDigit;
+static char* headerTitle;
+static char* headerContents;
+static Z80_registers reg;
+static unapi_code_block* codeBlock;
+static int ticksWaited;
+static int sysTimerHold;
+static byte redirectionUrlIsNewDomainName;
+static bool zeroContentLengthAnnounced;
 typedef struct {
     byte remoteIP[4];
     uint remotePort;
@@ -153,27 +154,27 @@ typedef struct {
 	int hostName;
 } t_TcpConnectionParameters;
 
-t_TcpConnectionParameters* TcpConnectionParameters;
+static t_TcpConnectionParameters* TcpConnectionParameters;
 #ifdef USE_TLS
-bool useHttps = false;
-bool mustCheckCertificate = true;
-bool mustCheckHostName = true;
-bool safeTlsIsSupported = true;
-bool TlsIsSupported = false;
-byte tcpIpSpecificationVersionMain;
-byte tcpIpSpecificationVersionSecondary;
-#endif
-bool tryKeepAlive = false;
-bool keepingConnectionAlive = false;
-byte redirectionRequests = 0;
+static bool useHttps = false;
+static bool mustCheckCertificate = true;
+static bool mustCheckHostName = true;
+static bool safeTlsIsSupported = true;
+static bool TlsIsSupported = false;
+static byte tcpIpSpecificationVersionMain;
+static byte tcpIpSpecificationVersionSecondary;
+#endif//USE_TLS
+static bool tryKeepAlive = false;
+static bool keepingConnectionAlive = false;
+static byte redirectionRequests = 0;
 static funcptr UpdateReceivedStatus;
 static funcdataptr SaveReceivedData;
 static funcsizeptr SendContentSize;
-bool thereisacallback = false;
-bool thereisasavecallback = false;
-bool thereisasizecallback = false;
-bool hasinitialized = false;
-bool indicateblockprogress = false;
+static bool thereisacallback = false;
+static bool thereisasavecallback = false;
+static bool thereisasizecallback = false;
+static bool hasinitialized = false;
+static bool indicateblockprogress = false;
 
 /* Some handy defines */
 
@@ -187,49 +188,50 @@ bool indicateblockprogress = false;
 
 /* Internal Function prototypes */
 /* Functions Related to HTTP Handling */
-void TerminateConnection();
-int ProcessUrl(char* url, byte isRedirection);
-void ExtractPortNumberFromDomainName();
-int DoHttpWork(char *rcvbuffer, unsigned int *rcvbuffersize);
-int SendHttpRequest();
-int ReadResponseHeaders();
-int SendLineToTcp(char* string);
-int CheckHeaderErrors();
-int DownloadHttpContents(char *rcvbuffer, unsigned int *rcvbuffersize);
-int SendCredentialsIfNecessary();
-int ReadResponseStatus();
-int ProcessResponseStatus();
-int ReadNextHeader();
-int ProcessNextHeader();
-void ExtractHeaderTitleAndContents();
-int HeaderTitleIs(char* string);
-int HeaderContentsIs(char* string);
-int DiscardBogusHttpContent();
-int DoDirectDatatransfer(char *rcvbuffer, unsigned int *rcvbuffersize);
-int DoChunkedDataTransfer(char *rcvbuffer, unsigned int *rcvbuffersize);
-long GetNextChunkSize();
+static void TerminateConnection();
+static int ProcessUrl(char* url, byte isRedirection);
+static void ExtractPortNumberFromDomainName();
+static int DoHttpWork(char *rcvbuffer, unsigned int *rcvbuffersize);
+static int SendHttpRequest();
+static int ReadResponseHeaders();
+static int SendLineToTcp(char* string);
+static int CheckHeaderErrors();
+static int DownloadHttpContents(char *rcvbuffer, unsigned int *rcvbuffersize);
+static int SendCredentialsIfNecessary();
+static int ReadResponseStatus();
+static int ProcessResponseStatus();
+static int ReadNextHeader();
+static int ProcessNextHeader();
+static void ExtractHeaderTitleAndContents();
+static int HeaderTitleIs(char* string);
+static int HeaderContentsIs(char* string);
+static int DiscardBogusHttpContent();
+static int DoDirectDatatransfer(char *rcvbuffer, unsigned int *rcvbuffersize);
+static int DoChunkedDataTransfer(char *rcvbuffer, unsigned int *rcvbuffersize);
+static long GetNextChunkSize();
 /* Functions Related to Callbacks Handling  */
 void UpdateReceivingMessage();
 /* Functions Related to Network I/O  */
-bool InitializeTcpipUnapi();
-bool CheckTcpipCapabilities();
-int EnsureThereIsTcpDataAvailable();
-bool EnsureTcpConnectionIsStillOpen();
-int ReadAsMuchTcpDataAsPossible();
-int GetInputByte(byte *data);
-bool CheckNetworkConnection();
-int OpenTcpConnection();
-int ResolveServerName();
-void CloseTcpConnection();
-int SendTcpData(byte* data, int dataSize);
+static bool InitializeTcpipUnapi();
+static bool CheckTcpipCapabilities();
+static int EnsureThereIsTcpDataAvailable();
+static bool EnsureTcpConnectionIsStillOpen();
+static int ReadAsMuchTcpDataAsPossible();
+static int GetInputByte(byte *data);
+static bool CheckNetworkConnection();
+static int OpenTcpConnection();
+static int ResolveServerName();
+static void CloseTcpConnection();
+static int SendTcpData(byte* data, int dataSize);
 /* Functions Related to File I/O  */
-bool CreateLocalFile();
-bool WriteContentsToFile(byte* dataPointer, int size);
-void CloseFile(byte fileHandle);
-void CloseLocalFile();
+static bool CreateLocalFile();
+static bool WriteContentsToFile(byte* dataPointer, int size);
+static void CloseFile(byte fileHandle);
+static void CloseLocalFile();
 /* Functions Related to Strings  */
-int StringStartsWith(const char* stringToCheck, const char* startingToken);
-char* FindLastSlash(char* string);
-int strcmpi(const char *a1, const char *a2);
-int strncmpi(const char *a1, const char *a2, unsigned size);
-#endif
+static int StringStartsWith(const char* stringToCheck, const char* startingToken);
+static char* FindLastSlash(char* string);
+static int strcmpi(const char *a1, const char *a2);
+static int strncmpi(const char *a1, const char *a2, unsigned size);
+
+#endif//HGET_H
