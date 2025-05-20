@@ -392,14 +392,18 @@ void printItem(uint8_t y, ListItem_t *item)
 	#define ITEM_POS_LOAD	67
 	#define ITEM_POS_SIZE	78
 
+	// Clear line
 	memset(buff, ' ', 80);
 	buff[80] = '\0';
 
+	// Add name
 	memncpy(buff, item->name, '\0', MAX_NAME_SIZE);
+	// Add load method
 	if (item->loadMethod) {
 		csprintf(heap_top, " (%c)", item->loadMethod);
 		memncpy(&buff[ITEM_POS_LOAD], heap_top, '\0', 5);
 	}
+	// Add size
 	formatSize(heap_top, item->size);
 	strcpy(&buff[ITEM_POS_SIZE-strlen(heap_top)], heap_top);
 
