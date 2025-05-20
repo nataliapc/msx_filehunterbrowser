@@ -51,6 +51,13 @@ Request_t request = {
 	{""}
 };
 
+const char *downloadMessage[] = {
+	"",
+	"Error retrieving list! Try again.",
+	"No items found for your request!",
+	"List too long, press ENTER and refine your search!"
+};
+
 
 // ========================================================
 static uint8_t msxVersionROM;
@@ -77,7 +84,7 @@ extern char *unapiBuffer;
 char *list_raw = NULL;
 uint32_t downloadSize;
 bool isDownloading = false;
-bool listTooLong = false;
+uint8_t downloadStatus;
 
 
 // ========================================================
@@ -180,9 +187,7 @@ void DataWriteCallback(char *rcv_buffer, int bytes_read)
 void HGETFileSizeUpdate (long contentSize)
 {
 	if (contentSize > DOWNLOAD_MAX_SIZE) {
-		putstrxy(2,PANEL_FIRSTY, "List too long, press ENTER and refine your search!");
-		putchar('\x07');
-		listTooLong = true;
+		downloadStatus = DOWNLOAD_LIST_TOO_LONG;
 		isDownloading = false;
 		*list_raw = '\0';
 	}
@@ -194,7 +199,7 @@ void getRemoteList()
 	heapPop();
 	heapPush();
 	list_raw = heap_top;
-	listTooLong = false;
+	downloadStatus = DOWNLOAD_OK;
 	isDownloading = true;
 
 	char *buffSearch = (char*)malloc(SEARCH_MAX_SIZE + 1);
@@ -234,8 +239,8 @@ void getRemoteList()
 		false						// enableKeepAlive
 	) != ERR_TCPIPUNAPI_OK)
 	{
-		putstrxy(2,PANEL_FIRSTY, "Error retrieving list! Try again.");
-		putchar('\x07');
+		if (downloadStatus == DOWNLOAD_OK)
+			downloadStatus = DOWNLOAD_ERROR;
 	}
 #endif
 	isDownloading = false;
@@ -291,6 +296,10 @@ void processList()
 	}
 	item->name = NULL;
 	itemsCount = item - list_start;
+
+	if (!itemsCount && downloadStatus == DOWNLOAD_OK) {
+		downloadStatus = DOWNLOAD_EMPTY;
+	}
 }
 
 
@@ -449,13 +458,17 @@ void updateList()
 	// Get remote list
 	getRemoteList();
 	processList();
-	if (itemsCount == 0 && !listTooLong) {
-		putstrxy(2,PANEL_FIRSTY+1, "Empty list!");
-	}
 
 	ASM_EI; ASM_HALT;
 	removeUpdateMessage();
-	printList();
+	if (downloadStatus == DOWNLOAD_OK) {
+		// Print list
+		printList();
+	} else {
+		// Print error message
+		putstrxy(2, PANEL_FIRSTY, downloadMessage[downloadStatus]);
+		putch(0x07);
+	}
 	printLineCounter();
 	if (itemsCount) setSelectedLine(true);
 }

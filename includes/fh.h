@@ -43,6 +43,13 @@ extern const ReqMSX_t reqMSX[];
 extern const Panel_t panels[];
 
 extern Request_t request;
+enum {
+	DOWNLOAD_OK,			// No error
+	DOWNLOAD_ERROR,			// Error
+	DOWNLOAD_EMPTY,			// Empty list
+	DOWNLOAD_LIST_TOO_LONG	// List too long
+};
+extern uint8_t downloadStatus;
 
 extern char *buff;
 extern ListItem_t *list_start;

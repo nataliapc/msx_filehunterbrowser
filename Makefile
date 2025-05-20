@@ -54,7 +54,7 @@ WRFLAGS = --disable-warning 196 --disable-warning 84
 CCFLAGS = --code-loc 0x07c0 --data-loc 0 -mz80 --no-std-crt0 --out-fmt-ihx $(OPFLAGS) $(WRFLAGS) $(DEFINES) $(DEBUG)
 
 
-LIBS = dos.lib conio.lib unapi_tcpip.lib utils.lib vdp.lib
+LIBS = unapi_tcpip.lib dos.lib conio.lib utils.lib vdp.lib
 REL_LIBS = 	$(addprefix $(LIBDIR)/, $(LIBS)) \
 			$(addprefix $(OBJDIR)/, \
 				crt0msx_msxdos_advanced.rel \
