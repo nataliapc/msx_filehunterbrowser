@@ -58,11 +58,11 @@ LIBS = unapi_tcpip.lib dos.lib conio.lib utils.lib vdp.lib
 REL_LIBS = 	$(addprefix $(LIBDIR)/, $(LIBS)) \
 			$(addprefix $(OBJDIR)/, \
 				crt0msx_msxdos_advanced.rel \
+				fh.rel \
 				heap.rel \
-				debug.rel \
 				mod_downloadFiles.rel \
 				mod_searchString.rel \
-				fh.rel \
+				mod_help.rel \
 			)
 
 PROGRAM = fh

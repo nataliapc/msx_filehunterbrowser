@@ -22,6 +22,7 @@
 #include "structs.h"
 #include "mod_downloadFiles.h"
 #include "mod_searchString.h"
+#include "mod_help.h"
 #ifdef _DEBUG_
 	#include "test.h"
 #endif
@@ -407,16 +408,24 @@ void printItem(uint8_t y, ListItem_t *item)
 
 void printList()
 {
-	if (itemsCount == 0) return;
+	printLineCounter();
 
-	ListItem_t *item = list_start + topLine;
-	uint8_t y = 5;
+	if (downloadStatus == DOWNLOAD_OK) {
+		ListItem_t *item = list_start + topLine;
+		uint8_t y = 5;
 
-	while (item->name) {
-		printItem(y, item);
-		y++;
-		item++;
-		if (y > 22) break;
+		while (item->name) {
+			printItem(y, item);
+			y++;
+			item++;
+			if (y > 22) break;
+		}
+		setSelectedLine(true);
+	} else {
+		// Print error message
+		setSelectedLine(false);
+		putstrxy(2, PANEL_FIRSTY, downloadMessage[downloadStatus]);
+		putch(0x07);
 	}
 }
 
@@ -461,16 +470,7 @@ void updateList()
 
 	ASM_EI; ASM_HALT;
 	removeUpdateMessage();
-	if (downloadStatus == DOWNLOAD_OK) {
-		// Print list
-		printList();
-	} else {
-		// Print error message
-		putstrxy(2, PANEL_FIRSTY, downloadMessage[downloadStatus]);
-		putch(0x07);
-	}
-	printLineCounter();
-	if (itemsCount) setSelectedLine(true);
+	printList();
 }
 
 void selectPanel(Panel_t *panel)
@@ -484,6 +484,17 @@ void selectPanel(Panel_t *panel)
 
 	updateList();
 }
+
+inline void nextTargetMSX()
+{
+	request.msx++;
+	if (request.msx->name[0] == 0) {
+		request.msx = &reqMSX[REQMSX_ALL];
+	}
+	printRequestData();
+	updateList();
+}
+
 
 // ========================================================
 void menu_loop()
@@ -560,7 +571,6 @@ void menu_loop()
 							setSelectedLine(true);
 						}
 						printList();
-						printLineCounter();
 					}
 					break;
 				case KEY_LEFT:
@@ -572,7 +582,6 @@ void menu_loop()
 							setSelectedLine(true);
 						}
 						printList();
-						printLineCounter();
 					}
 					break;
 				case KEY_TAB:
@@ -599,17 +608,13 @@ void menu_loop()
 				case 'V':
 					newPanel = PANEL_VGM; break;
 				case 'M':
-					request.msx++;
-					if (request.msx->name[0] == 0) {
-						request.msx = &reqMSX[REQMSX_ALL];
-					}
-					selectPanel(currentPanel);
+					nextTargetMSX();
 					break;
 				case KEY_RETURN:
 					changeSearchString();
 					break;
 				case '1':
-					// TODO: #################### help dialog
+					showHelpWindow();
 					break;
 				case '5':
 				case KEY_SELECT:

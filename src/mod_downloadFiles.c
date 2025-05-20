@@ -13,7 +13,7 @@
 
 
 // ========================================================
-void printDownloadMessage(ListItem_t *item)
+inline void printDownloadMessage(ListItem_t *item)
 {
 	_fillVRAM(0+(DOWNLOAD_POSY-1)*80, DOWNLOAD_HEIGHT*80, ' ');
 	fillBlink(1,DOWNLOAD_POSY, DOWNLOAD_HEIGHT,80, true);
@@ -27,7 +27,7 @@ void printDownloadMessage(ListItem_t *item)
 	gotoxy(22, DOWNLOAD_POSY+4);
 }
 
-void clearDownloadMessage()
+inline void clearDownloadMessage()
 {
 	fillBlink(1,DOWNLOAD_POSY, DOWNLOAD_HEIGHT,80, false);
 }

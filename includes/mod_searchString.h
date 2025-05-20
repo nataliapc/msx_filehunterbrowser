@@ -9,6 +9,4 @@
 #define SEARCH_HEIGHT 3
 
 
-void printSearchString();
-void clearSearchString();
 void changeSearchString();

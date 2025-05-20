@@ -4,12 +4,20 @@
 
 	See LICENSE file.
 */
-#include "structs.h"
+#pragma once
 
 
 // ========================================================
-#define DOWNLOAD_POSY	10
-#define DOWNLOAD_HEIGHT 6
+#define HELPWIN_POSX	20
+#define HELPWIN_POSY	7
+#define HELPWIN_HEIGHT	13
+
+typedef struct {
+	uint8_t x;
+	uint8_t y;
+	char   *str;
+} HelpWin_t;
+
 
 // ========================================================
-void downloadFile();
+void showHelpWindow();

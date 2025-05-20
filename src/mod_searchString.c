@@ -14,7 +14,7 @@
 
 
 // ========================================================
-void printSearchString()
+inline void printSearchString()
 {
 	_fillVRAM(0+(SEARCH_POSY-1)*80, SEARCH_HEIGHT*80, ' ');
 	fillBlink(1,SEARCH_POSY, SEARCH_HEIGHT,80, true);
@@ -23,7 +23,7 @@ void printSearchString()
 	putstrxy(4, SEARCH_POSY+1, "Search:");
 }
 
-void clearSearchString()
+inline void clearSearchString()
 {
 	fillBlink(1,SEARCH_POSY, SEARCH_HEIGHT,80, false);
 }
