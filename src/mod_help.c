@@ -41,8 +41,7 @@ void showHelpWindow()
 	}
 
 	// Wait for a pressed key
-	while (!kbhit()) { ASM_EI; ASM_HALT; }
-	while (kbhit()) getch();
+	waitKey();
 
 	_fillVRAM(0+(HELPWIN_POSY-1)*80, HELPWIN_HEIGHT*80, ' ');
 	fillBlink(1,HELPWIN_POSY, HELPWIN_HEIGHT,80, false);

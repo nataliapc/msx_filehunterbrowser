@@ -54,9 +54,13 @@ Request_t request = {
 
 const char *downloadMessage[] = {
 	"",
-	"Error retrieving list! Try again.",
-	"No items found for your request!",
-	"List too long, press ENTER and refine your search!"
+	"Error retrieving list! Try again",
+	"No items found for your request",
+	"List too long, press ENTER and refine your search",
+	"Error downloading file",
+	"File already exists",
+	"Root directory full",
+	"Disk full"
 };
 
 
@@ -169,12 +173,17 @@ uint32_t fileSize = 0;
 const char progressChar[] = {'\x1c', '\x1d'};
 uint8_t progress = 0;
 #define STATUS_PROGRESS_POS		1
+void printActivityLed(bool reset)
+{
+	if (reset) 	progress = sizeof(progressChar)-1;
+	setByteVRAM(STATUS_PROGRESS_POS, progressChar[progress]);
+	progress = (progress + 1) % sizeof(progressChar);
+}
+
 void HTTPStatusUpdate(bool isChunked)
 {
 	isChunked;
-
-	setByteVRAM(STATUS_PROGRESS_POS, progressChar[progress]);
-	progress = (progress + 1) % sizeof(progressChar);
+	printActivityLed(false);
 }
 
 void DataWriteCallback(char *rcv_buffer, int bytes_read)
@@ -185,7 +194,7 @@ void DataWriteCallback(char *rcv_buffer, int bytes_read)
 	}
 }
 
-void HGETFileSizeUpdate (long contentSize)
+void HGETFileSizeUpdate(long contentSize)
 {
 	if (contentSize > DOWNLOAD_MAX_SIZE) {
 		downloadStatus = DOWNLOAD_LIST_TOO_LONG;
@@ -195,6 +204,19 @@ void HGETFileSizeUpdate (long contentSize)
 	downloadSize = contentSize;
 }
 
+void formatURL(char *buff, uint16_t fileNum)
+{
+	char *buffSearch = (char*)malloc(SEARCH_MAX_SIZE + 1);
+	strcpy(buffSearch, request.search.value);
+	strReplaceChar(buffSearch, ' ', '+');
+	csprintf(buff, BASEURL, request.type->value, request.msx->value, buffSearch);
+	if (fileNum != -1) {
+		ltoa(fileNum, buffSearch);
+		strcat(buff, buffSearch);
+	}
+	free(SEARCH_MAX_SIZE + 1);
+}
+
 void getRemoteList()
 {
 	heapPop();
@@ -202,12 +224,7 @@ void getRemoteList()
 	list_raw = heap_top;
 	downloadStatus = DOWNLOAD_OK;
 	isDownloading = true;
-
-	char *buffSearch = (char*)malloc(SEARCH_MAX_SIZE + 1);
-	strcpy(buffSearch, request.search.value);
-	strReplaceChar(buffSearch, ' ', '+');
-	csprintf(buff, BASEURL, request.type->value, request.msx->value, buffSearch, "");
-	free(SEARCH_MAX_SIZE + 1);
+	formatURL(buff, -1);
 
 #ifdef _DEBUG_
 	uint16_t i = TEST_SIZE, size = 1024, pos = 0, cnt;
@@ -241,7 +258,7 @@ void getRemoteList()
 	) != ERR_TCPIPUNAPI_OK)
 	{
 		if (downloadStatus == DOWNLOAD_OK)
-			downloadStatus = DOWNLOAD_ERROR;
+			downloadStatus = DOWNLOAD_LIST_ERROR;
 	}
 #endif
 	isDownloading = false;
@@ -249,8 +266,7 @@ void getRemoteList()
 	heap_top++;
 	initializeBuffers();
 
-	setByteVRAM(STATUS_PROGRESS_POS, progressChar[sizeof(progressChar)-1]);
-	progress = 0;
+	printActivityLed(true);
 }
 
 char *findStringEnd(char *str)
@@ -418,11 +434,14 @@ void printList()
 		ListItem_t *item = list_start + topLine;
 		uint8_t y = 5;
 
-		while (item->name) {
-			printItem(y, item);
+		while (y <= PANEL_LASTY) {
+			if (item->name) {
+				printItem(y, item);
+				item++;
+			} else {
+				_fillVRAM(0+y*80, 80, ' ');
+			}
 			y++;
-			item++;
-			if (y > 22) break;
 		}
 		setSelectedLine(true);
 	} else {

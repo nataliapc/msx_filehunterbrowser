@@ -10,8 +10,8 @@
 #include "structs.h"
 
 
-#define VERSIONAPP		"0.2.0"
-#define BASEURL			"http://api.file-hunter.com/index3.php?type=%s&msx=%s&char=%s&download=%s"
+#define VERSIONAPP		"0.4.0"
+#define BASEURL			"http://api.file-hunter.com/index3.php?type=%s&msx=%s&char=%s&download="
 
 
 #define PANEL_FIRSTY	5
@@ -45,11 +45,17 @@ extern const Panel_t panels[];
 extern Request_t request;
 enum {
 	DOWNLOAD_OK,			// No error
-	DOWNLOAD_ERROR,			// Error
+	DOWNLOAD_LIST_ERROR,	// List Error (generic)
 	DOWNLOAD_EMPTY,			// Empty list
-	DOWNLOAD_LIST_TOO_LONG	// List too long
+	DOWNLOAD_LIST_TOO_LONG,	// List too long
+	DOWNLOAD_FILE_ERROR,	// File error (generic)
+	DOWNLOAD_FILE_EXISTS,	// File already exists
+	DOWNLOAD_ROOT_FULL,		// Root directory full
+	DOWNLOAD_DISK_FULL		// Disk full
 };
 extern uint8_t downloadStatus;
+extern uint32_t downloadSize;
+extern const char *downloadMessage[];
 
 extern char *buff;
 extern ListItem_t *list_start;
@@ -63,9 +69,13 @@ void _fillVRAM(uint16_t vram, uint16_t len, uint8_t value) __sdcccall(0);
 void _copyRAMtoVRAM(uint16_t memory, uint16_t vram, uint16_t size) __sdcccall(0);
 void restoreScreen();
 
+void formatURL(char *buff, uint16_t fileNum);
+void HTTPStatusUpdate(bool isChunked);
+
 void resetSelectedLine();
 void setSelectedLine(bool selected);
 void updateList();
+void printActivityLed(bool reset);
 void printList();
 void printRequestData();
 ListItem_t* getCurrentItem();

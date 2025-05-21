@@ -28,6 +28,7 @@ void fillBlink(uint8_t x, uint8_t y, uint8_t lines, uint8_t len, bool enabled);
 void putstrxy(uint8_t x, uint8_t y, char *str);
 uint8_t scanf(char *str, uint16_t maxLen);
 char* strReplaceChar(char *str, char find, char replace);
+void waitKey();
 
 
 #define MODE_ANK		0

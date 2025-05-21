@@ -1,8 +1,10 @@
 #include <stdint.h>
+#include <string.h>
 #include <ctype.h>
 #include "utils.h"
 #include "conio.h"
 
+static const char validChars[] = " ._-";
 
 // obtain chars from getch() and put into str until
 // a carriage return is found or length is reached
@@ -26,7 +28,7 @@ uint8_t scanf(char *str, uint16_t maxLen)
 				cputs("\b \b");
 			}
 		} else if (maxLen) {
-			if (isalnum(*ptr) || *ptr == ' ') {
+			if (isalnum(*ptr) || strchr(validChars, *ptr)) {
 				putchar(*ptr);
 				maxLen--;
 				ptr++;
