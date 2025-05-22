@@ -14,16 +14,18 @@
 
 // ========================================================
 static const HelpWin_t helpWin[] = {
-	{ HELPWIN_POSX, HELPWIN_POSY+1, "Keyboard shortcuts:" },
-	{ HELPWIN_POSX, HELPWIN_POSY+3, "M ........... Change MSX target" },
-	{ HELPWIN_POSX, HELPWIN_POSY+4, "R/D/C/V ..... Select a panel" },
-	{ HELPWIN_POSX, HELPWIN_POSY+5, "TAB ......... Next panel" },
-	{ HELPWIN_POSX, HELPWIN_POSY+6, "UP/DOWN ..... Select item" },
-	{ HELPWIN_POSX, HELPWIN_POSY+7, "RIGHT/LEFT .. Next/Prev page" },
-	{ HELPWIN_POSX, HELPWIN_POSY+8, "ENTER ....... Search by text" },
-	{ HELPWIN_POSX, HELPWIN_POSY+9, "F1 .......... Help" },
-	{ HELPWIN_POSX, HELPWIN_POSY+10,"F5 .......... Download selected file" },
-	{ HELPWIN_POSX, HELPWIN_POSY+11,"ESC ......... Exit" },
+	{ HELPWIN_POSX, HELPWIN_POSY+1, "File-Hunter Browser (NataliaPC'2025)" },
+	{ HELPWIN_POSX, HELPWIN_POSY+3, "Usage keys:" },
+	{ HELPWIN_POSX, HELPWIN_POSY+4, "M ........... Change MSX target" },
+	{ HELPWIN_POSX, HELPWIN_POSY+5, "R/D/C/V ..... Select a panel" },
+	{ HELPWIN_POSX, HELPWIN_POSY+6, "TAB ......... Next panel" },
+	{ HELPWIN_POSX, HELPWIN_POSY+7, "UP/DOWN ..... Select item" },
+	{ HELPWIN_POSX, HELPWIN_POSY+8, "RIGHT/LEFT .. Next/Prev page" },
+	{ HELPWIN_POSX, HELPWIN_POSY+9, "ENTER ....... Search by text" },
+	{ HELPWIN_POSX, HELPWIN_POSY+10,"F1 .......... Help" },
+	{ HELPWIN_POSX, HELPWIN_POSY+11,"F5 .......... Download selected file" },
+	{ HELPWIN_POSX, HELPWIN_POSY+12,"ESC ......... Exit" },
+	{ HELPWIN_POSX, HELPWIN_POSY+14,"Thanks to Arnaud, Jaap, & LManes" },
 	{ 0,0, NULL }
 };
 

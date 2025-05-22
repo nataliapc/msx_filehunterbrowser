@@ -9,8 +9,8 @@
 
 // ========================================================
 #define HELPWIN_POSX	20
-#define HELPWIN_POSY	7
-#define HELPWIN_HEIGHT	13
+#define HELPWIN_POSY	6
+#define HELPWIN_HEIGHT	16
 
 typedef struct {
 	uint8_t x;
