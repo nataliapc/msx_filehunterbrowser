@@ -552,15 +552,14 @@ void menu_loop()
 						setSelectedLine(false);
 						currentLine--;
 						setSelectedLine(true);
-						printLineCounter();
 					} else {
 						if (topLine > 0) {
 							topLine--;
 							panelScrollDown();
 							printItem(PANEL_FIRSTY, list_start + topLine);
-							printLineCounter();
 						}
 					}
+					printLineCounter();
 					break;
 				case KEY_DOWN:
 					if (currentLine + topLine + 1 < itemsCount) {
@@ -568,15 +567,14 @@ void menu_loop()
 							setSelectedLine(false);
 							currentLine++;
 							setSelectedLine(true);
-							printLineCounter();
 						} else {
 							if (topLine + currentLine + 1 < itemsCount) {
 								topLine++;
 								panelScrollUp();
 								printItem(PANEL_LASTY, list_start + topLine + currentLine);
-								printLineCounter();
 							}
 						}
+						printLineCounter();
 					}
 					break;
 				case KEY_RIGHT:

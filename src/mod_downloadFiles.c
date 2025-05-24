@@ -77,6 +77,7 @@ inline bool checkFilename(char *filename)
 	return true;
 }
 
+// ========================================================
 static void FileSizeUpdate(long contentSize)
 {
 	downloadSize = contentSize;
@@ -101,7 +102,6 @@ static void FileWriteCallback(char *rcv_buffer, int bytes_read)
 
 void downloadFileToDisk(ListItem_t *item)
 {
-	firstChunk = true;
 	formatURL(buff, item-list_start);
 
 	if (hget(
@@ -119,8 +119,6 @@ void downloadFileToDisk(ListItem_t *item)
 		if (downloadFileStatus == DOWNLOAD_OK)
 			downloadFileStatus = DOWNLOAD_FILE_ERROR;
 	}
-
-	printActivityLed(true);
 }
 
 // ========================================================
@@ -153,7 +151,9 @@ void downloadFile()
 		if (heap_top[0] != '\0') {
 			fh = dos2_fcreate(heap_top, O_WRONLY, ATTR_ARCHIVE);
 			if (fh < ERR_FIRST) {
+				firstChunk = true;
 				downloadFileToDisk(item);
+				printActivityLed(true);
 				dos2_fclose(fh);
 			} else {
 				switch (fh) {
