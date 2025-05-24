@@ -79,6 +79,7 @@ $(LIBDIR)/conio.lib:
 	@$(LIB_GUARD)
 	@cp $(EXTERNALS)/sdcc_msxconio/lib/conio.lib $@
 	@cp $(EXTERNALS)/sdcc_msxconio/include/conio.h $(INCDIR)
+	@cp $(EXTERNALS)/sdcc_msxconio/include/conio_aux.h $(INCDIR)
 
 $(LIBDIR)/dos.lib:
 	@$(MAKE) -j -C $(EXTERNALS)/sdcc_msxdos all SDCC_VER=$(SDCC_VER) DEFINES=-DDISABLE_CONIO

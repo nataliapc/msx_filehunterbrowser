@@ -19,6 +19,7 @@
 
 // ========================================================
 static FILEH fh;
+static uint32_t downloadSize;
 static uint8_t downloadFileStatus;
 static uint32_t downloadedBytes;
 static bool firstChunk;
@@ -31,17 +32,19 @@ inline void printEnterFilename(ListItem_t *item)
 	fillBlink(1,DOWNLOAD_POSY, DOWNLOAD_HEIGHT,80, true);
 
 	// Prepare filename with elipsis if too long
-	strcpy(heap_top, item->name);
-	if (strlen(item->name) >= 63) {
+	msx2_copyFromVRAM((uint32_t)item->name, (uint16_t)heap_top, 200);
+	heap_top[200] = 0;
+
+	if (strlen(heap_top) >= 63) {
 		strcpy(heap_top+63, "...");
 	}
 
 	// Print download message
 	csprintf(buff, "File: \"%s\"", heap_top);
 	putstrxy(4, DOWNLOAD_POSY+1, buff);
-	csprintf(buff, "Size: %lu bytes", item->size);
+	csprintf(buff, "Size: %u KB", item->size);
 	putstrxy(4, DOWNLOAD_POSY+2, buff);
-	putstrxy(4, DOWNLOAD_POSY+4, "Filename to save: [            ]");
+	putstrxy(4, DOWNLOAD_POSY+4, "Filename to save: [            ]  ESC to cancel");
 }
 
 inline void clearDownloadMessage()
@@ -52,6 +55,11 @@ inline void clearDownloadMessage()
 inline void printDownloadMessage()
 {
 	_fillVRAM(0+(DOWNLOAD_POSY-1)*80, DOWNLOAD_HEIGHT*80, ' ');
+}
+
+void clearStatusLine()
+{
+	_fillVRAM(0+(DOWNLOAD_POSY+3)*80, 80, ' ');
 }
 
 inline bool checkFilename(char *filename)
@@ -137,6 +145,11 @@ void downloadFile()
 			putchar('\x07');
 		} while (true);
 
+		// Print download message
+		clearStatusLine();
+		csprintf(buff, "Downloading file \"%s\":", heap_top);
+		putstrxy(4, DOWNLOAD_POSY+4, buff);
+
 		if (heap_top[0] != '\0') {
 			fh = dos2_fcreate(heap_top, O_WRONLY, ATTR_ARCHIVE);
 			if (fh < ERR_FIRST) {
@@ -167,7 +180,7 @@ void downloadFile()
 
 		if (downloadFileStatus != DOWNLOAD_OK) {
 			csprintf(buff, "Error downloading file \"%s\": %s", heap_top, downloadMessage[downloadFileStatus]);
-			_fillVRAM(0+(DOWNLOAD_POSY+3)*80, 80, ' ');
+			clearStatusLine();
 			putstrxy(4, DOWNLOAD_POSY+4, buff);
 			// Wait for a pressed key
 			waitKey();

@@ -8,11 +8,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "structs.h"
+#include "conio_aux.h"
 
 
-#define VERSIONAPP		"0.4.0"
-#define BASEURL			"http://api.file-hunter.com/index3.php?type=%s&msx=%s&char=%s&download="
+#define VERSIONAPP		"0.7.0"
+#define AUTHORAPP		"NataliaPC'2025"
+#define HGET_AGENT "User-Agent: MSX_FHBrowser (MSX-DOS2)\r\n"
 
+#define VRAM_START		0x1ba0
+
+extern const char *BASEURL;
 
 #define PANEL_FIRSTY	5
 #define PANEL_LASTY		22
@@ -46,6 +51,7 @@ extern Request_t request;
 enum {
 	DOWNLOAD_OK,			// No error
 	DOWNLOAD_LIST_ERROR,	// List Error (generic)
+	DOWNLOAD_CANCELLED,		// Cancelled by user
 	DOWNLOAD_EMPTY,			// Empty list
 	DOWNLOAD_LIST_TOO_LONG,	// List too long
 	DOWNLOAD_FILE_ERROR,	// File error (generic)
@@ -54,7 +60,6 @@ enum {
 	DOWNLOAD_DISK_FULL		// Disk full
 };
 extern uint8_t downloadStatus;
-extern uint32_t downloadSize;
 extern const char *downloadMessage[];
 
 extern char *buff;
@@ -64,14 +69,11 @@ extern ListItem_t *list_start;
 // ========================================================
 // Function declarations
 
-void setByteVRAM(uint16_t vram, uint8_t value) __sdcccall(0);
-void _fillVRAM(uint16_t vram, uint16_t len, uint8_t value) __sdcccall(0);
-void _copyRAMtoVRAM(uint16_t memory, uint16_t vram, uint16_t size) __sdcccall(0);
-void restoreScreen();
-
+void resetList();
 void formatURL(char *buff, uint16_t fileNum);
 void HTTPStatusUpdate(bool isChunked);
 
+void restoreScreen();
 void resetSelectedLine();
 void setSelectedLine(bool selected);
 void updateList();

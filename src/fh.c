@@ -16,8 +16,8 @@
 #include "dos.h"
 #include "conio.h"
 #include "asm.h"
-#include "hgetlib.h"
 #include "fh.h"
+#include "hgetlib.h"
 #include "patterns.h"
 #include "structs.h"
 #include "mod_downloadFiles.h"
@@ -29,6 +29,8 @@
 
 
 // ========================================================
+const char *BASEURL = "http://api.file-hunter.com/index4.php?base=1BA0&type=%s&msx=%s&char=%s&download=";
+
 const ReqType_t reqType[] = {
 	{""}, {"rom"}, {"dsk"}, {"cas"}, {"vgm"}
 };
@@ -55,6 +57,7 @@ Request_t request = {
 const char *downloadMessage[] = {
 	"",
 	"Error retrieving list! Try again",
+	"Connection cancelled by user, try again",
 	"No items found for your request",
 	"List too long, press ENTER and refine your search",
 	"Error downloading file",
@@ -74,20 +77,22 @@ static uint8_t originalBAKCLR;
 static uint8_t originalBDRCLR;
 
 char *buff;
-ListItem_t *list_start;
 Panel_t *currentPanel;
 int16_t itemsCount;
 int16_t topLine, currentLine;
 
 
-#define UNAPI_BUFFER_SIZE	(1600)
-#define LIST_START_SIZE		((sizeof(ListItem_t)) * 512)
-#define BUFF_SIZE			(200)
-#define STACK_SIZE			(1024)
-#define DOWNLOAD_MAX_SIZE	(varTPALIMIT - STACK_SIZE - LIST_START_SIZE - BUFF_SIZE - heap_top)
+#define UNAPI_BUFFER_SIZE		1600
+#define BUFF_SIZE				200
+#define STACKPILE_SIZE			1024
+#define DOWNLOAD_LIMIT_ADDR		(varTPALIMIT - BUFF_SIZE - STACKPILE_SIZE)
+#define VRAM_LIMIT_ADDR			(131072L)
 extern char *unapiBuffer;
-char *list_raw = NULL;
-uint32_t downloadSize;
+ListItem_t *list_start;
+ListItem_t *list_item;
+char *list_raw;
+bool structList;
+uint32_t vramAddress;
 bool isDownloading = false;
 uint8_t downloadStatus;
 
@@ -106,7 +111,6 @@ void initializeBuffers()
 		heap_top = (void*)0x8000;
 
 	// Assign buffers
-	list_start = (ListItem_t*)malloc(LIST_START_SIZE);
 	buff = malloc(BUFF_SIZE);
 }
 
@@ -118,7 +122,8 @@ void checkPlatformSystem()
 #ifndef _DEBUG_
 		if (ret == ERR_TCPIPUNAPI_NOT_TCPIP_CAPABLE) {
 			die("TCP/IP UNAPI not fully capable!\x07\r\n");
-		} else if (ret == ERR_HGET_INVALID_BUFFER) {
+		} else
+		if (ret == ERR_HGET_INVALID_BUFFER) {
 			die("Invalid buffer for TCP/IP UNAPI!\x07\r\n");
 		}
 		die("TCP/IP UNAPI not found!\x07\r\n");
@@ -169,13 +174,12 @@ inline bool isShiftKeyPressed()
 
 
 // ========================================================
-uint32_t fileSize = 0;
 const char progressChar[] = {'\x1c', '\x1d'};
 uint8_t progress = 0;
 #define STATUS_PROGRESS_POS		1
 void printActivityLed(bool reset)
 {
-	if (reset) 	progress = sizeof(progressChar)-1;
+	if (reset) progress = sizeof(progressChar) - 1;
 	setByteVRAM(STATUS_PROGRESS_POS, progressChar[progress]);
 	progress = (progress + 1) % sizeof(progressChar);
 }
@@ -188,20 +192,43 @@ void HTTPStatusUpdate(bool isChunked)
 
 void DataWriteCallback(char *rcv_buffer, int bytes_read)
 {
-	if (bytes_read && isDownloading) {
-		memcpy(heap_top, rcv_buffer, bytes_read);
-		heap_top += bytes_read;
-	}
-}
+	if (!bytes_read || !isDownloading) return;
 
-void HGETFileSizeUpdate(long contentSize)
-{
-	if (contentSize > DOWNLOAD_MAX_SIZE) {
-		downloadStatus = DOWNLOAD_LIST_TOO_LONG;
-		isDownloading = false;
-		*list_raw = '\0';
+	if (structList) {
+		if (list_raw + bytes_read > (char*)DOWNLOAD_LIMIT_ADDR) {
+			downloadStatus = DOWNLOAD_LIST_TOO_LONG;
+			isDownloading = false;
+			hget_cancel();
+			return;
+		}
+		memcpy(list_raw, rcv_buffer, bytes_read);
+		list_raw += bytes_read;
+
+		// Recorre el buffer recibido de la lista de ListItem_t
+		while ((char*)(list_item + 1) < list_raw) {
+			if (!*((uint32_t *)list_item)) {	// Si el ListItem_t no tiene nombre, es el final de la lista
+				char *ptr = ((char *)list_item) + sizeof(uint32_t);	// ajusta el puntero a la lista al principio de lista de strings
+				int16_t size = list_raw - ptr;	// Calcula si hay algo del inicio de la lista de strings que copiar a VRAM
+				if (size > 0) {					// Copia el inicio de la lista de strings a VRAM
+					msx2_copyToVRAM((uint16_t)ptr, vramAddress, size);
+					vramAddress += size;		// Ajusta la direccion de VRAM para la siguiente copia
+				}
+				list_raw -= size;				// Ajusta el buffer al final de la lista de ListItem_t para los chunks siguientes
+				structList = false;				// Define que ya solo quedan datos de la lista de strings
+				break;
+			}
+			list_item++;
+		}
+	} else {
+		if (vramAddress + bytes_read >= VRAM_LIMIT_ADDR) {
+			downloadStatus = DOWNLOAD_LIST_TOO_LONG;
+			isDownloading = false;
+			hget_cancel();
+		} else {								// copia el buffer recibido a VRAM
+			msx2_copyToVRAM((uint16_t)rcv_buffer, vramAddress, bytes_read);
+			vramAddress += bytes_read;
+		}
 	}
-	downloadSize = contentSize;
 }
 
 void formatURL(char *buff, uint16_t fileNum)
@@ -219,17 +246,18 @@ void formatURL(char *buff, uint16_t fileNum)
 
 void getRemoteList()
 {
-	heapPop();
-	heapPush();
-	list_raw = heap_top;
+	vramAddress = VRAM_START;
 	downloadStatus = DOWNLOAD_OK;
 	isDownloading = true;
+	structList = true;
+
 	formatURL(buff, -1);
+	resetList();			// popHeap() + pushHeap()
 
 #ifdef _DEBUG_
 	uint16_t i = TEST_SIZE, size = 1024, pos = 0, cnt;
-	HGETFileSizeUpdate(TEST_SIZE);
 	while (i) {
+		size += (rand() % 10) - 5;
 		if (i < size) {
 			size = i;
 		}
@@ -240,12 +268,12 @@ void getRemoteList()
 		i -= size;
 
 		cnt = varJIFFY;
-		while (varJIFFY-cnt < 10) {
+		while (varJIFFY-cnt < 3) {
 			ASM_EI; ASM_HALT;
 		}
 	}
 #else
-	if (hget(
+	uint16_t ret = hget(
 		buff,						// URL
 		NULL,						// filename
 		NULL,						// credent
@@ -253,70 +281,30 @@ void getRemoteList()
 		0,							// rcvbuffer
 		0,							// rcvbuffersize
 		(int)DataWriteCallback,		// data_write_callback
-		(int)HGETFileSizeUpdate,	// content_size_callback
+		0,							// content_size_callback
 		false						// enableKeepAlive
-	) != ERR_TCPIPUNAPI_OK)
+	);
+	if (ret != ERR_TCPIPUNAPI_OK)
 	{
-		if (downloadStatus == DOWNLOAD_OK)
-			downloadStatus = DOWNLOAD_LIST_ERROR;
+		resetList();
+		if (downloadStatus == DOWNLOAD_OK) {
+			if (ret == ERR_HGET_ESC_CANCELLED)
+				downloadStatus = DOWNLOAD_CANCELLED;
+			else
+				downloadStatus = DOWNLOAD_LIST_ERROR;
+		}
 	}
 #endif
+
 	isDownloading = false;
-	*((char*)heap_top) = '\0';
-	heap_top++;
-	initializeBuffers();
-
-	printActivityLed(true);
-}
-
-char *findStringEnd(char *str)
-{
-	char *end = str;
-	while (*end && *end != '\t' && *end != '\n') {
-		end++;
-	}
-	return end;
-}
-
-void processList()
-{
-	char *data = list_raw;
-	char *end;
-	bool isCas = false;
-	ListItem_t *item = list_start;
-
-	while (*data) {
-		// Name
-		end = findStringEnd(data);
-		item->name = data;
-		*end++ = 0;
-		data = end;
-
-		// Size
-		end = findStringEnd(data);
-		item->size = strtol(data, NULL, 10);
-		isCas = (*end == '\t');
-		*end++ = 0;
-		data = end;
-
-		// Load method
-		if (isCas) {
-			end = findStringEnd(data);
-			*end++ = 0;
-			item->loadMethod = *data;
-			data = end;
-		} else {
-			item->loadMethod = 0;
-		}
-
-		item++;
-	}
-	item->name = NULL;
-	itemsCount = item - list_start;
-
+	itemsCount = list_item - list_start;
 	if (!itemsCount && downloadStatus == DOWNLOAD_OK) {
 		downloadStatus = DOWNLOAD_EMPTY;
 	}
+
+	heap_top = list_raw;
+	initializeBuffers();
+	printActivityLed(true);
 }
 
 
@@ -351,7 +339,8 @@ void printHeader()
 {
 	textblink(1,1, 80, true);
 
-	putstrxy(2,1, "\x85 File-Hunter Browser "VERSIONAPP);
+	putstrxy(2,1, "\x85 File-Hunter Browser v"VERSIONAPP);
+	putstrxy(66,1, AUTHORAPP);
 
 	for (uint8_t i=0; i<80; i++) {
 		setByteVRAM(3*80+i, 0x17);
@@ -408,17 +397,19 @@ void printItem(uint8_t y, ListItem_t *item)
 	#define ITEM_POS_LOAD	67
 	#define ITEM_POS_SIZE	78
 
-	// Clear line
-	memset(buff, ' ', 80);
+	// Add name
+	msx2_copyFromVRAM((uint32_t)item->name, (uint16_t)buff, MAX_NAME_SIZE);
+	buff[MAX_NAME_SIZE] = '\0';
+	uint16_t len = strlen(buff);
+	memset(&buff[len], ' ', 80-len);
 	buff[80] = '\0';
 
-	// Add name
-	memncpy(buff, item->name, '\0', MAX_NAME_SIZE);
 	// Add load method
 	if (item->loadMethod) {
 		csprintf(heap_top, " (%c)", item->loadMethod);
 		memncpy(&buff[ITEM_POS_LOAD], heap_top, '\0', 5);
 	}
+
 	// Add size
 	formatSize(heap_top, item->size);
 	strcpy(&buff[ITEM_POS_SIZE-strlen(heap_top)], heap_top);
@@ -436,12 +427,12 @@ void printList()
 
 		while (y <= PANEL_LASTY) {
 			if (item->name) {
-				printItem(y, item);
+				printItem(y++, item);
 				item++;
 			} else {
-				_fillVRAM(0+y*80, 80, ' ');
+				_fillVRAM((y-1)*80, (PANEL_LASTY-y+1)*80, ' ');
+				break;
 			}
-			y++;
 		}
 		setSelectedLine(true);
 	} else {
@@ -471,6 +462,16 @@ void clearListArea()
 
 
 // ========================================================
+void resetList()
+{
+	heapPop();
+	heapPush();
+
+	list_start = list_item = (ListItem_t*)heap_top;
+	list_raw = heap_top;
+	list_start->name = 0L;
+}
+
 ListItem_t* getCurrentItem()
 {
 	return list_start + topLine + currentLine;
@@ -489,7 +490,6 @@ void updateList()
 
 	// Get remote list
 	getRemoteList();
-	processList();
 
 	ASM_EI; ASM_HALT;
 	removeUpdateMessage();
@@ -743,7 +743,7 @@ int main(char **argv, int argc) __sdcccall(0)
 	//Platform system checks
 	checkPlatformSystem();
 
-	heapPush();
+	resetList();
 	initializeBuffers();
 
 	// Menu loop

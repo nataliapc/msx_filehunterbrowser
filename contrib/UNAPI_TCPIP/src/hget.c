@@ -198,6 +198,10 @@ int hget (char* url, char* filename, char* credent, int progress_callback, char 
     return funcret;
 }
 
+void hget_cancel()
+{
+}
+
 
 /****************************
  ***  FUNCTIONS are here  ***

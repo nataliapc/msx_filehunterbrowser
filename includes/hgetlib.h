@@ -63,7 +63,9 @@
 
 #include <stdbool.h>
 
+#ifndef HGET_AGENT
 #define HGET_AGENT "User-Agent: MSX_HGETLIB (MSX-DOS)\r\n"
+#endif
 
 //#ifndef bool
 //typedef unsigned char bool;
@@ -123,5 +125,6 @@ int hget (char* url, char* filename, char* credent, int progress_callback, bool 
 #else
 int hget (char* url, char* filename, char* credent, int progress_callback, char *rcvbuffer, unsigned int *rcvbuffersize, int data_write_callback, int content_size_callback, bool enableKeepAlive);
 #endif
+void hget_cancel();
 
 #endif

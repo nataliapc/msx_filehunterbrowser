@@ -43,7 +43,7 @@ typedef struct {
 
 // Struct to hold a list item information
 typedef struct {
-	char     *name;			// Pointer to the name of the item
-	uint32_t  size;			// Parsed size
+	uint32_t  name;			// Pointer to the name of the item
+	uint16_t  size;			// Parsed size
 	uint8_t   loadMethod;	// [1 byte] Only for CAS
 } ListItem_t;

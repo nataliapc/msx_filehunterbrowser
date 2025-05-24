@@ -3,20 +3,17 @@
 #include "conio.h"
 
 
-char* formatSize(char *dst, uint32_t size)
+char* formatSize(char *dst, uint16_t size)
 {
 	char *format;
 	uint16_t finalSize;
 
 	if (size < 1024L) {
-		format = "%uB ";
-		finalSize = (uint16_t)size;
-	} else if (size < 1024L*1024L) {
 		format = "%uKB";
-		finalSize = (uint16_t)(size / 1024L);
+		finalSize = size;
 	} else {
 		format = "%uMB";
-		finalSize = (uint16_t)(size / (1024L*1024L));
+		finalSize = size / 1024;
 	}
 	csprintf(dst, format, finalSize);
 	return dst;

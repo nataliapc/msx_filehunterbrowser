@@ -21,8 +21,12 @@ void dzx0_standard(void *src, void *dst) __sdcccall(1);
 uint16_t loadFile(char *filename, void *destaddress, uint16_t size);
 uint16_t loadFullFile(char *filename, void *destaddress);
 
+void setVDP_Read(uint32_t vram) __sdcccall(1);
+void setVDP_Write(uint32_t vram) __sdcccall(1);
+void msx2_copyToVRAM(uint16_t memory, uint32_t vram, uint16_t size) __sdcccall(0);
+void msx2_copyFromVRAM(uint32_t vram, uint16_t memory, uint16_t size) __sdcccall(0);
 
-char* formatSize(char *dst, uint32_t size);
+char* formatSize(char *dst, uint16_t size);
 void memncpy(char *dst, char *src, char c, uint16_t size);
 void fillBlink(uint8_t x, uint8_t y, uint8_t lines, uint8_t len, bool enabled);
 void putstrxy(uint8_t x, uint8_t y, char *str);
