@@ -38,7 +38,7 @@ void showHelpWindow()
 	HelpWin_t *help = helpWin;
 	while (help->str) {
 		putstrxy(help->x, help->y, help->str);
-		help++;
+		++help;
 	}
 
 	// Wait for a pressed key

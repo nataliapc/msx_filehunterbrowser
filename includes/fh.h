@@ -11,7 +11,7 @@
 #include "conio_aux.h"
 
 
-#define VERSIONAPP		"0.7.0"
+#define VERSIONAPP		"0.8.0"
 #define AUTHORAPP		"NataliaPC'2025"
 #define HGET_AGENT "User-Agent: MSX_FHBrowser (MSX-DOS2)\r\n"
 
@@ -46,6 +46,7 @@ extern const ReqMSX_t reqMSX[];
 #define PANEL_VGM		3
 #define PANEL_LAST		PANEL_VGM
 extern const Panel_t panels[];
+extern Panel_t *currentPanel;
 
 extern Request_t request;
 enum {

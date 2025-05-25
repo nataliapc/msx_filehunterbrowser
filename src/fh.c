@@ -22,6 +22,7 @@
 #include "structs.h"
 #include "mod_downloadFiles.h"
 #include "mod_searchString.h"
+#include "mod_commandLine.h"
 #include "mod_help.h"
 #ifdef _DEBUG_
 	#include "test.h"
@@ -77,7 +78,7 @@ static uint8_t originalBAKCLR;
 static uint8_t originalBDRCLR;
 
 char *buff;
-Panel_t *currentPanel;
+Panel_t *currentPanel = &panels[PANEL_FIRST];
 int16_t itemsCount;
 int16_t topLine, currentLine;
 
@@ -364,7 +365,7 @@ void printTabs()
 			putstrxy(panel->posx, 4, "\x17\x17\x17\x17\x17\x17\x17");
 		}
 		putstrxy(panel->posx+1, 3, panel->name);
-		panel++;
+		++panel;
 	}
 }
 
@@ -428,7 +429,7 @@ void printList()
 		while (y <= PANEL_LASTY) {
 			if (item->name) {
 				printItem(y++, item);
-				item++;
+				++item;
 			} else {
 				_fillVRAM((y-1)*80, (PANEL_LASTY-y+1)*80, ' ');
 				break;
@@ -510,7 +511,7 @@ void selectPanel(Panel_t *panel)
 
 inline void nextTargetMSX()
 {
-	request.msx++;
+	++request.msx;
 	if (request.msx->name[0] == 0) {
 		request.msx = &reqMSX[REQMSX_ALL];
 	}
@@ -536,7 +537,7 @@ void menu_loop()
 
 	// Initialize header & panel
 	printHeader();
-	selectPanel(&panels[PANEL_FIRST]);
+	selectPanel(currentPanel);
 
 	// Menu loop
 	int8_t  newPanel = PANEL_NONE;
@@ -550,11 +551,11 @@ void menu_loop()
 				case KEY_UP:
 					if (currentLine > 0) {
 						setSelectedLine(false);
-						currentLine--;
+						--currentLine;
 						setSelectedLine(true);
 					} else {
 						if (topLine > 0) {
-							topLine--;
+							--topLine;
 							panelScrollDown();
 							printItem(PANEL_FIRSTY, list_start + topLine);
 						}
@@ -565,11 +566,11 @@ void menu_loop()
 					if (currentLine + topLine + 1 < itemsCount) {
 						if (currentLine < PANEL_HEIGHT - 1) {
 							setSelectedLine(false);
-							currentLine++;
+							++currentLine;
 							setSelectedLine(true);
 						} else {
 							if (topLine + currentLine + 1 < itemsCount) {
-								topLine++;
+								++topLine;
 								panelScrollUp();
 								printItem(PANEL_LASTY, list_start + topLine + currentLine);
 							}
@@ -610,10 +611,10 @@ void menu_loop()
 						if (currentPanel == &panels[0]) {
 							currentPanel = &panels[PANEL_LAST];
 						} else {
-							currentPanel--;
+							--currentPanel;
 						}
 					} else {
-						currentPanel++;
+						++currentPanel;
 						if (currentPanel->name[0] == 0) {
 							currentPanel = &panels[PANEL_FIRST];
 						}
@@ -642,7 +643,7 @@ void menu_loop()
 					downloadFile();
 					break;
 				case KEY_ESC:
-					end++;
+					++end;
 			}
 			if (newPanel != PANEL_NONE) {
 				if (currentPanel != &panels[newPanel]) {
@@ -709,25 +710,6 @@ void restoreScreen()
 
 	// Restore abort routine
 	dos2_setAbortRoutine((void*)0x0000);
-}
-
-void printHelp()
-{
-	// Print help message
-	cputs("## FileHunter Browser v"VERSIONAPP"\n"
-		  "## by NataliaPC'2025\n\n"
-		  "Usage:\n"
-		  "  fh\n\n"
-		  "See FH.HLP file for more information.\n");
-	dos2_exit(1);
-}
-
-void checkArguments(char **argv, int argc)
-{
-	// Check if argument is a INI file
-	if (argc && argv[0]) {
-		printHelp();
-	}
 }
 
 // ========================================================

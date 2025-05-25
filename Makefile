@@ -60,8 +60,9 @@ REL_LIBS = 	$(addprefix $(LIBDIR)/, $(LIBS)) \
 				crt0msx_msxdos_advanced.rel \
 				fh.rel \
 				heap.rel \
-				mod_downloadFiles.rel \
 				mod_searchString.rel \
+				mod_downloadFiles.rel \
+				mod_commandLine.rel \
 				mod_help.rel \
 			)
 
