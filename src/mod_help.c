@@ -24,7 +24,7 @@ static const HelpWin_t helpWin[] = {
 	{ HELPWIN_POSX, HELPWIN_POSY+9,"F1 .......... Help" },
 	{ HELPWIN_POSX, HELPWIN_POSY+10,"F5 .......... Download selected file" },
 	{ HELPWIN_POSX, HELPWIN_POSY+11,"ESC ......... Exit" },
-	{ HELPWIN_POSX, HELPWIN_POSY+13,"Thanks to Arnaud, JOM, & LManes" },
+	{ HELPWIN_POSX, HELPWIN_POSY+13,"Thanks to Arnaud, JOM, LManes, & Ducasp" },
 	{ 0,0, NULL }
 };
 

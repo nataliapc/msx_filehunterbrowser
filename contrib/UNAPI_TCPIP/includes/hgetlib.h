@@ -77,7 +77,7 @@
 //#define true (!false)
 //#endif
 
-enum HgetReturnCodes {
+enum HgetReturnCodes_enum {
     ERR_TCPIPUNAPI_OK = 0,
     ERR_TCPIPUNAPI_NOTFOUND, //1
     ERR_TCPIPUNAPI_NOT_TCPIP_CAPABLE, //2
@@ -114,17 +114,16 @@ enum HgetReturnCodes {
     ERR_HGET_CONN_LOST, //33
     ERR_HGET_INVALID_BUFFER //34
 };
+typedef unsigned char HgetReturnCode_t;
 
-// Functions Related to Strings
-char* ltoa(unsigned long num, char *string);
 // Functions Related to HTTP
-int hgetinit (unsigned int addressforbuffer);
+HgetReturnCode_t hgetinit (unsigned int addressforbuffer);
 void hgetfinish (void);
 #ifdef USE_TLS
-int hget (char* url, char* filename, char* credent, int progress_callback, bool checkcertificateifssl, bool checkhostnameifssl, char *rcvbuffer, unsigned int *rcvbuffersize, int data_write_callback, int content_size_callback, bool enableKeepAlive);
+HgetReturnCode_t hget (char* url, /*char* filename, char* credent,*/ int progress_callback, bool checkcertificateifssl, bool checkhostnameifssl, /*char *rcvbuffer, unsigned int *rcvbuffersize,*/ int data_write_callback, int content_size_callback, bool enableKeepAlive);
 #else
-int hget (char* url, char* filename, char* credent, int progress_callback, char *rcvbuffer, unsigned int *rcvbuffersize, int data_write_callback, int content_size_callback, bool enableKeepAlive);
+HgetReturnCode_t hget (char* url, /*char* filename, char* credent,*/ int progress_callback, /*char *rcvbuffer, unsigned int *rcvbuffersize,*/ int data_write_callback, int content_size_callback, bool enableKeepAlive);
 #endif
-void hget_cancel();
+void hgetcancel();
 
 #endif

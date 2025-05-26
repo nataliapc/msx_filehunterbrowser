@@ -199,7 +199,7 @@ void DataWriteCallback(char *rcv_buffer, int bytes_read)
 		if (list_raw + bytes_read > (char*)DOWNLOAD_LIMIT_ADDR) {
 			downloadStatus = DOWNLOAD_LIST_TOO_LONG;
 			isDownloading = false;
-			hget_cancel();
+			hgetcancel();
 			return;
 		}
 		memcpy(list_raw, rcv_buffer, bytes_read);
@@ -218,13 +218,13 @@ void DataWriteCallback(char *rcv_buffer, int bytes_read)
 				structList = false;				// Define que ya solo quedan datos de la lista de strings
 				break;
 			}
-			list_item++;
+			++list_item;
 		}
 	} else {
 		if (vramAddress + bytes_read >= VRAM_LIMIT_ADDR) {
 			downloadStatus = DOWNLOAD_LIST_TOO_LONG;
 			isDownloading = false;
-			hget_cancel();
+			hgetcancel();
 		} else {								// copia el buffer recibido a VRAM
 			msx2_copyToVRAM((uint16_t)rcv_buffer, vramAddress, bytes_read);
 			vramAddress += bytes_read;
@@ -239,7 +239,7 @@ void formatURL(char *buff, uint16_t fileNum)
 	strReplaceChar(buffSearch, ' ', '+');
 	csprintf(buff, BASEURL, request.type->value, request.msx->value, buffSearch);
 	if (fileNum != -1) {
-		ltoa(fileNum, buffSearch);
+		csprintf(buffSearch, "%u", fileNum);
 		strcat(buff, buffSearch);
 	}
 	free(SEARCH_MAX_SIZE + 1);
@@ -274,13 +274,9 @@ void getRemoteList()
 		}
 	}
 #else
-	uint16_t ret = hget(
+	HgetReturnCode_t ret = hget(
 		buff,						// URL
-		NULL,						// filename
-		NULL,						// credent
 		(int)HTTPStatusUpdate,		// progress_callback
-		0,							// rcvbuffer
-		0,							// rcvbuffersize
 		(int)DataWriteCallback,		// data_write_callback
 		0,							// content_size_callback
 		false						// enableKeepAlive

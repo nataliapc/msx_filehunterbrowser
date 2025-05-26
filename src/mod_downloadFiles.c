@@ -106,11 +106,7 @@ void downloadFileToDisk(ListItem_t *item)
 
 	if (hget(
 		buff,						// URL
-		NULL,						// filename
-		NULL,						// credent
 		(int)HTTPStatusUpdate,		// progress_callback
-		0,							// rcvbuffer
-		0,							// rcvbuffersize
 		(int)FileWriteCallback,		// data_write_callback
 		(int)FileSizeUpdate,		// content_size_callback
 		false						// enableKeepAlive
