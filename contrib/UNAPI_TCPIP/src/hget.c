@@ -131,6 +131,7 @@ HgetReturnCode_t hget (char* url, int progress_callback, int data_write_callback
 	mustCheckCertificate = checkcertificateifssl;
 	mustCheckHostName = checkhostnameifssl;
 #endif
+    cancelled_by_handler = false;
     receivedLength = 0;
 
     if (!hasinitialized)
@@ -188,11 +189,9 @@ HgetReturnCode_t hget (char* url, int progress_callback, int data_write_callback
     return funcret;
 }
 
-bool must_continue;
 void hgetcancel()
 {
-    continueReceived = false;
-    must_continue = false;
+    cancelled_by_handler = true;
 }
 
 
@@ -314,6 +313,7 @@ inline void ExtractPortNumberFromDomainName()
 inline HgetReturnCode_t DoHttpWork()
 {
     HgetReturnCode_t funcret;
+    bool must_continue;
 
     do {
         must_continue = false;

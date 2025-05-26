@@ -110,7 +110,7 @@ enum TcpipErrorCodes {
 /* Strings */
 #define strDefaultFilename "index.htm";
 
-/* Global Variables */
+/* Global Variables */ 
 static bool continue_using_keep_alive;
 static byte conn = 0;
 static char* domainName;
@@ -140,6 +140,7 @@ static int ticksWaited;
 static int sysTimerHold;
 static bool redirectionUrlIsNewDomainName;
 static bool zeroContentLengthAnnounced;
+static bool cancelled_by_handler;
 typedef struct {
     byte remoteIP[4];
     uint remotePort;
@@ -179,7 +180,7 @@ static bool indicateblockprogress = false;
 #define SkipLF() GetInputByte(NULL)
 #define ToLowerCase(ch) {ch |= 32;}
 #define ResetTcpBuffer() {remainingInputData = 0; inputDataPointer = TcpInputData;}
-#define AbortIfEscIsPressed() ((*((byte*)0xFBEC) & 4) == 0)
+#define AbortIfEscIsPressed() ((*((byte*)0xFBEC) & 4) == 0 || cancelled_by_handler)
 
 /* Internal Function prototypes */
 /* Functions Related to HTTP Handling */
