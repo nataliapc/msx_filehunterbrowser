@@ -13,7 +13,7 @@
 
 #define VERSIONAPP		"0.9.0"
 #define AUTHORAPP		"NataliaPC'2025"
-#define HGET_AGENT "User-Agent: MSX_FHBrowser (MSX-DOS2)\r\n"
+#define FHBROWSER_AGENT	"MSX_FHBrowser (MSX-DOS2)"
 
 #define VRAM_START		0x1ba0
 

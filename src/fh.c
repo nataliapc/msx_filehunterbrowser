@@ -95,6 +95,7 @@ uint8_t marqueeLen = 0;
 #define DOWNLOAD_LIMIT_ADDR		(varTPALIMIT - BUFF_SIZE - STACKPILE_SIZE)
 #define VRAM_LIMIT_ADDR			(131072L)
 extern char *unapiBuffer;
+static const char *user_agent = FHBROWSER_AGENT;
 ListItem_t *list_start;
 ListItem_t *list_item;
 char *list_raw;
@@ -124,7 +125,7 @@ void initializeBuffers()
 void checkPlatformSystem()
 {
 	// Check TCP/IP UNAPI
-	char ret = hgetinit((uint16_t)unapiBuffer);
+	char ret = hgetinit((uint16_t)unapiBuffer, user_agent);
 	if (ret != ERR_TCPIPUNAPI_OK) {
 #ifndef _DEBUG_
 		if (ret == ERR_TCPIPUNAPI_NOT_TCPIP_CAPABLE) {

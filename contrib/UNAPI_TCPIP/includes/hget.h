@@ -108,22 +108,24 @@ enum TcpipErrorCodes {
 };
 
 /* Strings */
-#define strDefaultFilename "index.htm";
+#define strDefaultFilename "index.htm"
 
-/* Global Variables */ 
+/* Global Variables */
+static const char *default_user_agent = "MSX_HGETLIB (MSX)";
+static const char *user_agent;
 static bool continue_using_keep_alive;
-static byte conn = 0;
+static byte conn;
 static char* domainName;
 static bool continueReceived;
-static bool redirectionRequested = 0;
-static int remainingInputData = 0;
+static bool redirectionRequested;
+static int remainingInputData;
 static byte* inputDataPointer;
 static byte emptyLineReaded;
 static long contentLength,blockSize,currentBlock;
 static bool isChunkedTransfer;
-static long currentChunkSize = 0;
+static long currentChunkSize;
 static bool newLocationReceived;
-static long receivedLength = 0;
+static long receivedLength;
 static byte* TcpInputData;
 #define TcpOutputData TcpInputData
 static byte remoteFilePath[256];

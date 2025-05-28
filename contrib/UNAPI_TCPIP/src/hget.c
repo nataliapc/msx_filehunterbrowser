@@ -68,10 +68,15 @@
 #endif
 
 
-HgetReturnCode_t hgetinit (unsigned int addressforbuffer)
+HgetReturnCode_t hgetinit(unsigned int addressforbuffer, const char* userAgent)
 {
     if (!hasinitialized)
     {
+        if (userAgent != NULL)
+            user_agent = userAgent;
+        else
+            user_agent = default_user_agent;
+
         continue_using_keep_alive = true;
         conn = 0;
         hasinitialized = false;
@@ -108,7 +113,7 @@ HgetReturnCode_t hgetinit (unsigned int addressforbuffer)
 }
 
 
-void hgetfinish (void)
+void hgetfinish(void)
 {
     if (hasinitialized) {
         thereisacallback = false;
@@ -120,9 +125,9 @@ void hgetfinish (void)
 
 
 #ifdef USE_TLS
-HgetReturnCode_t hget (char* url, int progress_callback, bool checkcertificateifssl, bool checkhostnameifssl, int data_write_callback, int content_size_callback, bool enableKeepAlive)
+HgetReturnCode_t hget(char* url, int progress_callback, bool checkcertificateifssl, bool checkhostnameifssl, int data_write_callback, int content_size_callback, bool enableKeepAlive)
 #else
-HgetReturnCode_t hget (char* url, int progress_callback, int data_write_callback, int content_size_callback, bool enableKeepAlive)
+HgetReturnCode_t hget(char* url, int progress_callback, int data_write_callback, int content_size_callback, bool enableKeepAlive)
 #endif
 {
     HgetReturnCode_t funcret;
@@ -436,7 +441,7 @@ inline HgetReturnCode_t SendHttpRequest()
     funcret = SendLineToTcp(TcpOutputData);
     if (funcret!=ERR_TCPIPUNAPI_OK)
         return funcret;
-    sprintf(TcpOutputData, HGET_AGENT);
+    sprintf(TcpOutputData, "User-Agent: %s\r\n", user_agent);
     funcret = SendLineToTcp(TcpOutputData);
     if (funcret!=ERR_TCPIPUNAPI_OK)
         return funcret;

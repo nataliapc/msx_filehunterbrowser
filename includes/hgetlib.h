@@ -63,10 +63,6 @@
 
 #include <stdbool.h>
 
-#ifndef HGET_AGENT
-#define HGET_AGENT "User-Agent: MSX_HGETLIB (MSX-DOS)\r\n"
-#endif
-
 //#ifndef bool
 //typedef unsigned char bool;
 //#endif
@@ -117,7 +113,7 @@ enum HgetReturnCodes_enum {
 typedef unsigned char HgetReturnCode_t;
 
 // Functions Related to HTTP
-HgetReturnCode_t hgetinit (unsigned int addressforbuffer);
+HgetReturnCode_t hgetinit (unsigned int addressforbuffer, const char *userAgent);
 void hgetfinish (void);
 #ifdef USE_TLS
 HgetReturnCode_t hget (char* url, /*char* filename, char* credent,*/ int progress_callback, bool checkcertificateifssl, bool checkhostnameifssl, /*char *rcvbuffer, unsigned int *rcvbuffersize,*/ int data_write_callback, int content_size_callback, bool enableKeepAlive);
