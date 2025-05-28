@@ -400,6 +400,8 @@ void printItem(uint8_t y, ListItem_t *item)
 	#define ITEM_POS_LOAD	67
 	#define ITEM_POS_SIZE	78
 
+	if (!item->name) return;
+
 	// Add name
 	msx2_copyFromVRAM((uint32_t)item->name, (uint16_t)buff, 80);
 	buff[80] = '\0';
@@ -675,7 +677,7 @@ void menu_loop()
 				newPanel = PANEL_NONE;
 			}
 		}
-		if (marqueeLen > MAX_NAME_SIZE) {
+		if (itemsCount && marqueeLen > MAX_NAME_SIZE) {
 			if (!countDownMarquee) {
 				countDownMarquee = MARQUEE_STEP;
 				if (marqueePos < marqueeLen - MARQUEE_LEN_OFFSET) {
