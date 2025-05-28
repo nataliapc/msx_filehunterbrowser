@@ -314,7 +314,7 @@ void getRemoteList()
 // ========================================================
 void clearBlinkList()
 {
-	_fillVRAM(0x0800 + PANEL_FIRSTY*10, PANEL_HEIGHT*10, 0);
+	_fillVRAM(0x0800 + (PANEL_FIRSTY-1)*10, PANEL_HEIGHT*10, 0);
 }
 
 #define UPDATING_POSY	11
