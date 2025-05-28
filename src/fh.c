@@ -82,6 +82,12 @@ Panel_t *currentPanel = &panels[PANEL_FIRST];
 int16_t itemsCount;
 int16_t topLine, currentLine;
 
+#define MARQUEE_FIRST			200
+#define MARQUEE_STEP			6
+#define MARQUEE_LEN_OFFSET		20
+uint8_t countDownMarquee;
+uint8_t marqueePos = 0;
+uint8_t marqueeLen = 0;
 
 #define UNAPI_BUFFER_SIZE		1600
 #define BUFF_SIZE				200
@@ -306,6 +312,11 @@ void getRemoteList()
 
 
 // ========================================================
+void clearBlinkList()
+{
+	_fillVRAM(0x0800 + PANEL_FIRSTY*10, PANEL_HEIGHT*10, 0);
+}
+
 #define UPDATING_POSY	11
 void printUpdatingListMessage()
 {
@@ -383,11 +394,6 @@ void resetSelectedLine()
 	currentLine = topLine = 0;
 }
 
-void setSelectedLine(bool selected)
-{
-	textblink(1, PANEL_FIRSTY+currentLine, 80, selected);
-}
-
 void printItem(uint8_t y, ListItem_t *item)
 {
 	#define MAX_NAME_SIZE	70
@@ -395,15 +401,23 @@ void printItem(uint8_t y, ListItem_t *item)
 	#define ITEM_POS_SIZE	78
 
 	// Add name
-	msx2_copyFromVRAM((uint32_t)item->name, (uint16_t)buff, MAX_NAME_SIZE);
-	buff[MAX_NAME_SIZE] = '\0';
-	uint16_t len = strlen(buff);
-	memset(&buff[len], ' ', 80-len);
+	msx2_copyFromVRAM((uint32_t)item->name, (uint16_t)buff, 80);
+	buff[80] = '\0';
+	marqueeLen = strlen(buff);
+	if (marqueePos) {
+		memncpy(buff, &buff[marqueePos], '\0', MAX_NAME_SIZE);
+	}
+
+	uint8_t len = marqueeLen - marqueePos;
+	if (len > MAX_NAME_SIZE) {
+		len = MAX_NAME_SIZE;
+	}
+	memset(&buff[len], ' ', 80);
 	buff[80] = '\0';
 
 	// Add load method
 	if (item->loadMethod) {
-		csprintf(heap_top, " (%c)", item->loadMethod);
+		csprintf(heap_top, " (%c)     ", item->loadMethod);
 		memncpy(&buff[ITEM_POS_LOAD], heap_top, '\0', 5);
 	}
 
@@ -411,7 +425,16 @@ void printItem(uint8_t y, ListItem_t *item)
 	formatSize(heap_top, item->size);
 	strcpy(&buff[ITEM_POS_SIZE-strlen(heap_top)], heap_top);
 
-	putstrxy(2,y, buff);
+	putlinexy(2,y, 78, buff);
+}
+
+void setSelectedLine(bool selected)
+{
+	countDownMarquee = MARQUEE_FIRST;	// Reset marquee counter
+	marqueePos = 0;						// Reset marquee position
+	printItem(PANEL_FIRSTY + currentLine, list_start + topLine + currentLine);
+
+	textblink(1, PANEL_FIRSTY+currentLine, 80, selected);
 }
 
 void printList()
@@ -442,13 +465,15 @@ void printList()
 
 void panelScrollUp()
 {
-	movetext(1,PANEL_FIRSTY+1, 80,PANEL_LASTY, 1,PANEL_FIRSTY);
+	msx2_copyFromVRAM(0+(PANEL_FIRSTY)*80, (uint16_t)heap_top, (PANEL_HEIGHT-1)*80);
+	msx2_copyToVRAM((uint16_t)heap_top, 0+(PANEL_FIRSTY-1)*80, (PANEL_HEIGHT-1)*80);
 	_fillVRAM(0+(PANEL_LASTY-1)*80, 80, ' ');
 }
 
 void panelScrollDown()
 {
-	movetext(1,PANEL_FIRSTY, 80,PANEL_LASTY-1, 1,PANEL_FIRSTY+1);
+	msx2_copyFromVRAM(0+(PANEL_FIRSTY-1)*80, (uint16_t)heap_top, (PANEL_HEIGHT-1)*80);
+	msx2_copyToVRAM((uint16_t)heap_top, 0+(PANEL_FIRSTY)*80, (PANEL_HEIGHT-1)*80);
 	_fillVRAM(0+(PANEL_FIRSTY-1)*80, 80, ' ');
 }
 
@@ -477,7 +502,7 @@ ListItem_t* getCurrentItem()
 void updateList()
 {
 	ASM_EI; ASM_HALT;
-	setSelectedLine(false);
+	clearBlinkList();
 	resetSelectedLine();
 
 	// Clear list area
@@ -538,6 +563,7 @@ void menu_loop()
 	// Menu loop
 	int8_t  newPanel = PANEL_NONE;
 	bool end = false;
+	bool resetMarquee = true;
 
 	while (!end) {
 		// Wait for a pressed key
@@ -647,6 +673,20 @@ void menu_loop()
 					selectPanel(currentPanel);
 				}
 				newPanel = PANEL_NONE;
+			}
+		}
+		if (marqueeLen > MAX_NAME_SIZE) {
+			if (!countDownMarquee) {
+				countDownMarquee = MARQUEE_STEP;
+				if (marqueePos < marqueeLen - MARQUEE_LEN_OFFSET) {
+					marqueePos++;
+				} else {
+					countDownMarquee = MARQUEE_FIRST;
+					marqueePos = 0;
+				}
+				printItem(PANEL_FIRSTY + currentLine, list_start + topLine + currentLine);
+			} else {
+				countDownMarquee--;
 			}
 		}
 	}

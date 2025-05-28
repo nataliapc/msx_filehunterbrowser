@@ -99,11 +99,6 @@ $(LIBDIR)/utils.lib: $(patsubst $(SRCLIB)/%, $(OBJDIR)/%.rel, $(wildcard $(SRCLI
 	@$(LIB_GUARD)
 	@$(AR) $(LDFLAGS) $@ $^ ;
 
-$(LIBDIR)/vdp.lib: $(patsubst $(SRCLIB)/%, $(OBJDIR)/%.rel, $(wildcard $(SRCLIB)/vdp_*))
-	@echo "$(COL_WHITE)######## Creating $@$(COL_RESET)"
-	@$(LIB_GUARD)
-	@$(AR) $(LDFLAGS) $@ $^ ;
-
 $(OBJDIR)/%.rel: $(SRCDIR)/%.s
 	@echo "$(COL_BLUE)#### ASM $@$(COL_RESET)"
 	@$(DIR_GUARD)
