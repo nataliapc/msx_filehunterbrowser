@@ -431,12 +431,20 @@ void printItem(uint8_t y, ListItem_t *item)
 	putlinexy(2,y, 78, buff);
 }
 
-void setSelectedLine(bool selected)
+void resetMarquee()
 {
 	countDownMarquee = MARQUEE_FIRST;	// Reset marquee counter
 	marqueePos = 0;						// Reset marquee position
-	printItem(PANEL_FIRSTY + currentLine, list_start + topLine + currentLine);
+}
 
+void printCurrentLine()
+{
+	printItem(PANEL_FIRSTY + currentLine, list_start + topLine + currentLine);
+}
+
+void setSelectedLine(bool selected)
+{
+	printCurrentLine();
 	textblink(1, PANEL_FIRSTY+currentLine, 80, selected);
 }
 
@@ -566,12 +574,12 @@ void menu_loop()
 	// Menu loop
 	int8_t  newPanel = PANEL_NONE;
 	bool end = false;
-	bool resetMarquee = true;
 
 	while (!end) {
 		// Wait for a pressed key
 		ASM_EI; ASM_HALT;
 		if (kbhit()) {
+			resetMarquee();
 			switch(dos2_toupper(getch())) {
 				case KEY_UP:
 					if (currentLine > 0) {
@@ -582,7 +590,7 @@ void menu_loop()
 						if (topLine > 0) {
 							--topLine;
 							panelScrollDown();
-							printItem(PANEL_FIRSTY, list_start + topLine);
+							printCurrentLine();
 						}
 					}
 					printLineCounter();
@@ -597,7 +605,7 @@ void menu_loop()
 							if (topLine + currentLine + 1 < itemsCount) {
 								++topLine;
 								panelScrollUp();
-								printItem(PANEL_LASTY, list_start + topLine + currentLine);
+								printCurrentLine();
 							}
 						}
 						printLineCounter();
@@ -669,6 +677,9 @@ void menu_loop()
 					break;
 				case KEY_ESC:
 					++end;
+				default:
+					printCurrentLine();
+					break;
 			}
 			if (newPanel != PANEL_NONE) {
 				if (currentPanel != &panels[newPanel]) {
@@ -684,8 +695,7 @@ void menu_loop()
 				if (marqueePos < marqueeLen - MARQUEE_LEN_OFFSET) {
 					marqueePos++;
 				} else {
-					countDownMarquee = MARQUEE_FIRST;
-					marqueePos = 0;
+					resetMarquee();
 				}
 				printItem(PANEL_FIRSTY + currentLine, list_start + topLine + currentLine);
 			} else {
