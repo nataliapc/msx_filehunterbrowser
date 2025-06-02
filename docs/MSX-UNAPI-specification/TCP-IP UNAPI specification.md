@@ -1,3 +1,5 @@
+Source: https://github.com/Konamiman/MSX-UNAPI-specification/blob/master/docs/TCP-IP%20UNAPI%20specification.md
+
 # TCP/IP UNAPI specification
 
 ## Index

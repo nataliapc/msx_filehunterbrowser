@@ -1,3 +1,5 @@
+Source: https://github.com/Konamiman/MSX-UNAPI-specification/blob/master/docs/Ethernet%20UNAPI%20specification%201.1.md
+
 # The Ethernet UNAPI specification
 
 This document describes an UNAPI compliant API specification for Ethernet hardware for MSX computers.

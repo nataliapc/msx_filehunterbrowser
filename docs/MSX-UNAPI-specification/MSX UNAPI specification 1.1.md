@@ -1,3 +1,5 @@
+Source: https://github.com/Konamiman/MSX-UNAPI-specification/blob/master/docs/MSX%20UNAPI%20specification%201.1.md
+
 # MSX-UNAPI: Unified procedure for API definition and discovery on MSX computers
 
 This document describes MSX-UNAPI, a standard procedure for defining, discovering and using new APIs (Application Program Interfaces) for MSX computers. The goal is to provide a unified way to design and use BIOS-like software for the various kinds of new hardware that is being developed for these computers, altough it can be used for software-only solutions as well.
