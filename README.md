@@ -67,6 +67,7 @@ FH [/H][/M <gen>][/S <search>][/P <panel>]
 
 ### Examples
 ```bash
+FH                             # Default search
 FH /M 2 /P dsk /S "konami"     # Search MSX2 disk images containing "konami"
 FH /P rom /S "gradius"         # Search ROM files containing "gradius"
 FH /M turbo-r                  # Browse Turbo-R compatible files
@@ -99,7 +100,7 @@ make all
 ```
 
 ## Thanks
-Thanks to Arnaud de Klerk, @leomanes, @skillax, and @ducasp.
+Thanks to Arnaud de Klerk, @leomanes, @skillax, @ducasp, and @konamiman.
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
