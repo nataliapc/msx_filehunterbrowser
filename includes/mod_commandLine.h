@@ -4,6 +4,7 @@
 
 	See LICENSE file.
 */
+#pragma once
 
 
 void checkArguments(char **argv, int argc);

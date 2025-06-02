@@ -11,7 +11,7 @@
 #include "conio_aux.h"
 
 
-#define VERSIONAPP		"0.9.0"
+#define VERSIONAPP		"1.0.0"
 #define AUTHORAPP		"NataliaPC'2025"
 #define FHBROWSER_AGENT	"MSX_FHBrowser (MSX-DOS2)"
 
@@ -43,8 +43,9 @@ extern const ReqMSX_t reqMSX[];
 #define PANEL_ROM		0
 #define PANEL_DSK		1
 #define PANEL_CAS		2
-#define PANEL_VGM		3
-#define PANEL_LAST		PANEL_VGM
+//#define PANEL_VGM		3
+//#define PANEL_LAST		PANEL_VGM
+#define PANEL_LAST		PANEL_CAS
 extern const Panel_t panels[];
 extern Panel_t *currentPanel;
 

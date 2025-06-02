@@ -1,7 +1,10 @@
+.github/copilot-instructions.md
 .vscode/*.log
+backup*.zip
 libs/*.lib
 obj
 assets
+contrib/**/*.lib
 bin/**/
 **/aux
 **/old
@@ -12,3 +15,6 @@ _*
 res/out
 includes/strings_index.h
 src/libs/utils_strings_zx0.c
+*.zip
+*.wav
+*.mp3
