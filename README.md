@@ -99,7 +99,7 @@ make all
 ```
 
 ## Thanks
-Thanks to Arnaud de Klerk, @leomanes, @jom, and @ducasp.
+Thanks to Arnaud de Klerk, @leomanes, @skillax, and @ducasp.
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
