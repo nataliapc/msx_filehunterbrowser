@@ -45,7 +45,7 @@ EMUEXT2P = $(EMUEXT) -ext msxdos2 -ext ram512k
 EMUSCRIPTS = -script $(ROOTDIR)/emulation/boot.tcl
 
 
-DEFINES := -D_DOSLIB_
+DEFINES := -D_DOSLIB_ -DDISABLE_VGM
 #DEBUG := -D_DEBUG_
 #FULLOPT :=  --max-allocs-per-node 200000
 LDFLAGS = -rc

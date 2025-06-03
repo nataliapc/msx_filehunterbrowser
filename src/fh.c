@@ -44,7 +44,9 @@ const Panel_t panels[] = {
 	{"[R]OM", &reqType[REQTYPE_ROM], 'r', 1},
 	{"[D]SK", &reqType[REQTYPE_DSK], 'd', 8},
 	{"[C]AS", &reqType[REQTYPE_CAS], 'c', 15},
-//	{"[V]GM", &reqType[REQTYPE_VGM], 'v', 22},
+#ifndef DISABLE_VGM
+	{"[V]GM", &reqType[REQTYPE_VGM], 'v', 22},
+#endif
 	{"", NULL, 0, 0}
 };
 
@@ -574,14 +576,19 @@ void menu_loop()
 	// Menu loop
 	int8_t  newPanel = PANEL_NONE;
 	bool end = false;
+	bool shiftPressed;
+	char key;
 
 	while (!end) {
 		// Wait for a pressed key
 		ASM_EI; ASM_HALT;
 		if (kbhit()) {
 			resetMarquee();
-			switch(dos2_toupper(getch())) {
+			key = dos2_toupper(getch());
+			shiftPressed = isShiftKeyPressed();
+			switch(key) {
 				case KEY_UP:
+					if (!itemsCount) break;
 					if (currentLine > 0) {
 						setSelectedLine(false);
 						--currentLine;
@@ -596,6 +603,7 @@ void menu_loop()
 					printLineCounter();
 					break;
 				case KEY_DOWN:
+					if (!itemsCount) break;
 					if (currentLine + topLine + 1 < itemsCount) {
 						if (currentLine < PANEL_HEIGHT - 1) {
 							setSelectedLine(false);
@@ -612,35 +620,35 @@ void menu_loop()
 					}
 					break;
 				case KEY_RIGHT:
-					if (itemsCount) {
-						topLine += PANEL_HEIGHT;
-						if (topLine + PANEL_HEIGHT >= itemsCount) {
-							setSelectedLine(false);
-							if (PANEL_HEIGHT > itemsCount) {
-								topLine = 0;
-								currentLine = itemsCount - 1;
-							} else {
-								currentLine = PANEL_HEIGHT - 1;
-								topLine = itemsCount - currentLine - 1;
-							}	
-							setSelectedLine(true);
-						}
-						printList();
+					if (!itemsCount) break;
+					topLine += PANEL_HEIGHT;
+					if (topLine + PANEL_HEIGHT >= itemsCount || shiftPressed) {
+						setSelectedLine(false);
+						if (PANEL_HEIGHT > itemsCount) {
+							topLine = 0;
+							currentLine = itemsCount - 1;
+						} else {
+							currentLine = PANEL_HEIGHT - 1;
+							topLine = itemsCount - currentLine - 1;
+						}	
+						setSelectedLine(true);
 					}
+					printList();
 					break;
 				case KEY_LEFT:
-					if (itemsCount) {
+					if (!itemsCount) break;
+					if (topLine + currentLine > 0 || shiftPressed) {
+						setSelectedLine(false);
 						topLine -= PANEL_HEIGHT;
-						if (topLine < 0) {
-							setSelectedLine(false);
+						if (topLine < 0 || shiftPressed) {
 							resetSelectedLine();
-							setSelectedLine(true);
 						}
-						printList();
+						setSelectedLine(true);
 					}
+					printList();
 					break;
 				case KEY_TAB:
-					if (isShiftKeyPressed()) {
+					if (shiftPressed) {
 						if (currentPanel == &panels[0]) {
 							currentPanel = &panels[PANEL_LAST];
 						} else {
@@ -660,12 +668,15 @@ void menu_loop()
 					newPanel = PANEL_DSK; break;
 				case 'C':
 					newPanel = PANEL_CAS; break;
-//				case 'V':
-//					newPanel = PANEL_VGM; break;
-				case 'M':
+#ifndef DISABLE_VGM
+				case 'V':
+					newPanel = PANEL_VGM; break;
+#endif
+					case 'M':
 					nextTargetMSX();
 					break;
 				case KEY_RETURN:
+					if (!itemsCount) break;
 					changeSearchString();
 					break;
 				case '1':
@@ -673,6 +684,7 @@ void menu_loop()
 					break;
 				case '5':
 				case KEY_SELECT:
+					if (!itemsCount) break;
 					downloadFile();
 					break;
 				case KEY_ESC:

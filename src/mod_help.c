@@ -15,16 +15,17 @@
 // ========================================================
 static const HelpWin_t helpWin[] = {
 	{ HELPWIN_POSX, HELPWIN_POSY+1, "Usage keys:" },
-	{ HELPWIN_POSX, HELPWIN_POSY+3, "M ........... Change MSX target" },
-	{ HELPWIN_POSX, HELPWIN_POSY+4, "R/D/C/V ..... Select a panel" },
-	{ HELPWIN_POSX, HELPWIN_POSY+5, "TAB ......... Next panel" },
-	{ HELPWIN_POSX, HELPWIN_POSY+6, "UP/DOWN ..... Select item" },
-	{ HELPWIN_POSX, HELPWIN_POSY+7, "RIGHT/LEFT .. Next/Prev page" },
-	{ HELPWIN_POSX, HELPWIN_POSY+8, "ENTER ....... Search by text" },
-	{ HELPWIN_POSX, HELPWIN_POSY+9,"F1 .......... Help" },
-	{ HELPWIN_POSX, HELPWIN_POSY+10,"F5 .......... Download selected file" },
-	{ HELPWIN_POSX, HELPWIN_POSY+11,"ESC ......... Exit" },
-	{ HELPWIN_POSX, HELPWIN_POSY+13,"Thanks to Arnaud, JOM, LManes, & Ducasp" },
+	{ HELPWIN_POSX, HELPWIN_POSY+3, "M ................. Change MSX target" },
+	{ HELPWIN_POSX, HELPWIN_POSY+4, "R/D/C/V ........... Select a panel" },
+	{ HELPWIN_POSX, HELPWIN_POSY+5, "TAB ............... Next panel" },
+	{ HELPWIN_POSX, HELPWIN_POSY+6, "UP/DOWN ........... Select item" },
+	{ HELPWIN_POSX, HELPWIN_POSY+7, "RIGHT/LEFT ........ Next/Prev page" },
+	{ HELPWIN_POSX, HELPWIN_POSY+8, "Shift+RIGHT/LEFT .. Begin/End of the list" },
+	{ HELPWIN_POSX, HELPWIN_POSY+9, "ENTER ............. Search by text" },
+	{ HELPWIN_POSX, HELPWIN_POSY+10,"F1 ................ Help" },
+	{ HELPWIN_POSX, HELPWIN_POSY+11,"F5 ................ Download selected file" },
+	{ HELPWIN_POSX, HELPWIN_POSY+12,"ESC ............... Exit" },
+	{ HELPWIN_POSX-4, HELPWIN_POSY+14,"Thanks to Arnaud, JOM, LManes, Ducasp, & Konamiman" },
 	{ 0,0, NULL }
 };
 

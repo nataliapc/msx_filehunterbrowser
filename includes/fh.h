@@ -43,9 +43,12 @@ extern const ReqMSX_t reqMSX[];
 #define PANEL_ROM		0
 #define PANEL_DSK		1
 #define PANEL_CAS		2
-//#define PANEL_VGM		3
-//#define PANEL_LAST		PANEL_VGM
-#define PANEL_LAST		PANEL_CAS
+#ifndef DISABLE_VGM
+	#define PANEL_VGM		3
+	#define PANEL_LAST		PANEL_VGM
+#else
+	#define PANEL_LAST		PANEL_CAS
+#endif
 extern const Panel_t panels[];
 extern Panel_t *currentPanel;
 
