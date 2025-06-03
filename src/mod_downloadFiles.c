@@ -32,9 +32,8 @@ inline void printEnterFilename(ListItem_t *item)
 	fillBlink(1,DOWNLOAD_POSY, DOWNLOAD_HEIGHT,80, true);
 
 	// Prepare filename with elipsis if too long
-	msx2_copyFromVRAM((uint32_t)item->name, (uint16_t)heap_top, 200);
-	heap_top[200] = 0;
-
+	msx2_copyFromVRAM((uint32_t)item->name, (uint16_t)heap_top, 80);
+	heap_top[80] = 0;
 	if (strlen(heap_top) >= 63) {
 		strcpy(heap_top+63, "...");
 	}
@@ -44,7 +43,8 @@ inline void printEnterFilename(ListItem_t *item)
 	putstrxy(4, DOWNLOAD_POSY+1, buff);
 	csprintf(buff, "Size: %u KB", item->size);
 	putstrxy(4, DOWNLOAD_POSY+2, buff);
-	putstrxy(4, DOWNLOAD_POSY+4, "Filename to save: [            ]  ESC to cancel");
+	csprintf(buff, "Filename to save: [        ]%s  ESC to cancel", currentPanel->type->extension);
+	putstrxy(4, DOWNLOAD_POSY+4, buff);
 }
 
 inline void clearDownloadMessage()
@@ -62,7 +62,7 @@ void clearStatusLine()
 	_fillVRAM(0+(DOWNLOAD_POSY+3)*80, 80, ' ');
 }
 
-inline bool checkFilename(char *filename)
+inline bool isValidFilename(char *filename)
 {
 	// Check if filename is not empty and is in n+3 format where n > 0 and n <=8. No spaces allowed
 
@@ -122,6 +122,7 @@ void downloadFile()
 {
 	ListItem_t *item = getCurrentItem();
 	bool end;
+	char *filename = malloc(8+1+3+1);
 
 	ASM_EI; ASM_HALT;
 	setSelectedLine(false);
@@ -132,20 +133,24 @@ void downloadFile()
 		downloadedBytes = 0L;
 
 		do {
-			putstrxy(23,DOWNLOAD_POSY+4, "            ");
+			putstrxy(23,DOWNLOAD_POSY+4, "        ");
 			gotoxy(23, DOWNLOAD_POSY+4);
-			scanf(heap_top, 8+1+3);
-			if (heap_top[0] == '\0' || checkFilename(heap_top)) break;
+			scanf(filename, 8);
+			if (!filename[0]) break;
+			strcat(filename, currentPanel->type->extension);
+			if (isValidFilename(filename)) break;
 			putchar('\x07');
 		} while (true);
 
-		// Print download message
-		clearStatusLine();
-		csprintf(buff, "Downloading file \"%s\":", heap_top);
-		putstrxy(4, DOWNLOAD_POSY+4, buff);
+		if (filename[0]) {
+			// Print download message
+			clearStatusLine();
+			dos2_strupr(filename);
+			csprintf(buff, "Downloading file \"%s\":", filename);
+			putstrxy(4, DOWNLOAD_POSY+4, buff);
 
-		if (heap_top[0] != '\0') {
-			fh = dos2_fcreate(heap_top, O_WRONLY, ATTR_ARCHIVE);
+			// Create file on disk
+			fh = dos2_fcreate(filename, O_WRONLY, ATTR_ARCHIVE);
 			if (fh < ERR_FIRST) {
 				firstChunk = true;
 				downloadFileToDisk(item);
@@ -175,8 +180,8 @@ void downloadFile()
 		end = true;
 
 		if (downloadFileStatus != DOWNLOAD_OK) {
-			csprintf(buff, "Error downloading file \"%s\": %s", heap_top, downloadMessage[downloadFileStatus]);
 			clearStatusLine();
+			csprintf(buff, "Error downloading file \"%s\": %s", filename, downloadMessage[downloadFileStatus]);
 			putstrxy(4, DOWNLOAD_POSY+4, buff);
 			// Wait for a pressed key
 			waitKey();
@@ -188,4 +193,6 @@ void downloadFile()
 	clearDownloadMessage();
 	printList();
 	setSelectedLine(true);
+
+	free(8+1+3+1);
 }

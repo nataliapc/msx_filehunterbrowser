@@ -11,6 +11,7 @@
 // Struct to hold the request type
 typedef struct {
 	char value[4];
+	char extension[5];
 } ReqType_t;
 
 // Struct to hold the MSX type

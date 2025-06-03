@@ -33,7 +33,11 @@
 const char *BASEURL = "http://api.file-hunter.com/index4.php?base=1BA0&type=%s&msx=%s&char=%s&download=";
 
 const ReqType_t reqType[] = {
-	{""}, {"rom"}, {"dsk"}, {"cas"}, {"vgm"}
+	{"", ""},
+	{"rom", ".ROM"},
+	{"dsk", ".DSK"},
+	{"cas", ".CAS"},
+	{"vgm", ".ZIP"}
 };
 
 const ReqMSX_t reqMSX[] = {
