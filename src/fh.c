@@ -676,7 +676,6 @@ void menu_loop()
 					nextTargetMSX();
 					break;
 				case KEY_RETURN:
-					if (!itemsCount) break;
 					changeSearchString();
 					break;
 				case '1':

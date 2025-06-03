@@ -1,0 +1,16 @@
+                                                                               
+                   Usage keys:                                                 
+                                                                               
+                   M ................. Change MSX target                       
+                   R/D/C/V ........... Select a panel                          
+                   TAB ............... Next panel                              
+                   UP/DOWN ........... Select item                             
+                   RIGHT/LEFT ........ Next/Prev page                          
+                   Shift+RIGHT/LEFT .. Begin/End of the list                   
+                   ENTER ............. Search by text                          
+                   F1 ................ Help                                    
+                   F5 ................ Download selected file                  
+                   ESC ............... Exit                                    
+                                                                               
+               Thanks to Arnaud, JOM, LManes, Ducasp, & Konamiman              
+                                                                               

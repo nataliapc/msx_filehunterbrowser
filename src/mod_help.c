@@ -7,45 +7,37 @@
 #include <stdlib.h>
 #include "msx_const.h"
 #include "conio.h"
+#include "heap.h"
 #include "utils.h"
 #include "fh.h"
 #include "mod_help.h"
 
 
 // ========================================================
-static const HelpWin_t helpWin[] = {
-	{ HELPWIN_POSX, HELPWIN_POSY+1, "Usage keys:" },
-	{ HELPWIN_POSX, HELPWIN_POSY+3, "M ................. Change MSX target" },
-	{ HELPWIN_POSX, HELPWIN_POSY+4, "R/D/C/V ........... Select a panel" },
-	{ HELPWIN_POSX, HELPWIN_POSY+5, "TAB ............... Next panel" },
-	{ HELPWIN_POSX, HELPWIN_POSY+6, "UP/DOWN ........... Select item" },
-	{ HELPWIN_POSX, HELPWIN_POSY+7, "RIGHT/LEFT ........ Next/Prev page" },
-	{ HELPWIN_POSX, HELPWIN_POSY+8, "Shift+RIGHT/LEFT .. Begin/End of the list" },
-	{ HELPWIN_POSX, HELPWIN_POSY+9, "ENTER ............. Search by text" },
-	{ HELPWIN_POSX, HELPWIN_POSY+10,"F1 ................ Help" },
-	{ HELPWIN_POSX, HELPWIN_POSY+11,"F5 ................ Download selected file" },
-	{ HELPWIN_POSX, HELPWIN_POSY+12,"ESC ............... Exit" },
-	{ HELPWIN_POSX-4, HELPWIN_POSY+14,"Thanks to Arnaud, JOM, LManes, Ducasp, & Konamiman" },
-	{ 0,0, NULL }
-};
+extern const unsigned char out_help_bin_zx0[];
+
+
+// ========================================================
+#define HELPWIN_POSY	6
+#define HELPWIN_SIZE	(*((uint16_t*)out_help_bin_zx0))
+#define HELPWIN_HEIGHT	(HELPWIN_SIZE/80)
+
+
 
 // ========================================================
 void showHelpWindow()
 {
 	setSelectedLine(false);
-	_fillVRAM(0+(HELPWIN_POSY-1)*80, HELPWIN_HEIGHT*80, ' ');
+	_fillVRAM(0+(HELPWIN_POSY-1)*80, HELPWIN_SIZE, ' ');
 	fillBlink(1,HELPWIN_POSY, HELPWIN_HEIGHT,80, true);
 
-	HelpWin_t *help = helpWin;
-	while (help->str) {
-		putstrxy(help->x, help->y, help->str);
-		++help;
-	}
+	dzx0_standard(out_help_bin_zx0 + 2, heap_top);
+	msx2_copyToVRAM((uint16_t)heap_top, 0+(HELPWIN_POSY-1)*80, HELPWIN_SIZE);
 
 	// Wait for a pressed key
 	waitKey();
 
-	_fillVRAM(0+(HELPWIN_POSY-1)*80, HELPWIN_HEIGHT*80, ' ');
+	_fillVRAM(0+(HELPWIN_POSY-1)*80, HELPWIN_SIZE, ' ');
 	fillBlink(1,HELPWIN_POSY, HELPWIN_HEIGHT,80, false);
 	printList();
 }

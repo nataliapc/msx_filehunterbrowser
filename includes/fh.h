@@ -11,7 +11,7 @@
 #include "conio_aux.h"
 
 
-#define VERSIONAPP		"1.0.0"
+#define VERSIONAPP		"1.0.1"
 #define AUTHORAPP		"NataliaPC'2025"
 #define FHBROWSER_AGENT	"MSX_FHBrowser (MSX-DOS2)"
 

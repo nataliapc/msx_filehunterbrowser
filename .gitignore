@@ -8,13 +8,13 @@ contrib/**/*.lib
 bin/**/
 **/aux
 **/old
+**/out
 dsk
 externals
 *.class
 _*
-res/out
 includes/strings_index.h
-src/libs/utils_strings_zx0.c
+src/libs/utils_help_zx0.c
 *.zip
 *.wav
 *.mp3

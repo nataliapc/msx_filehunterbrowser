@@ -1,4 +1,4 @@
-.PHONY: clean contrib test release resview dsk rom
+.PHONY: clean contrib test release resview dsk rom res
 
 SDCC_VER := 4.2.0
 DOCKER_IMG = nataliapc/sdcc:$(SDCC_VER)
@@ -54,7 +54,7 @@ WRFLAGS = --disable-warning 196 --disable-warning 84
 CCFLAGS = --code-loc 0x07c0 --data-loc 0 -mz80 --no-std-crt0 --out-fmt-ihx $(OPFLAGS) $(WRFLAGS) $(DEFINES) $(DEBUG)
 
 
-LIBS = unapi_tcpip.lib dos.lib conio.lib utils.lib vdp.lib
+LIBS = unapi_tcpip.lib dos.lib conio.lib utils.lib
 REL_LIBS = 	$(addprefix $(LIBDIR)/, $(LIBS)) \
 			$(addprefix $(OBJDIR)/, \
 				crt0msx_msxdos_advanced.rel \
@@ -70,10 +70,13 @@ PROGRAM = fh
 DSKNAME = $(PROGRAM).dsk
 
 
-all: contrib $(OBJDIR)/$(PROGRAM).com release
+all: contrib res $(OBJDIR)/$(PROGRAM).com release
 
 contrib:
 	@$(MAKE) -C $(CONTRIB) all SDCC_VER=$(SDCC_VER)
+
+res:
+	@$(MAKE) -C $(RESDIR) all
 
 $(LIBDIR)/conio.lib:
 	@$(MAKE) -j -C $(EXTERNALS)/sdcc_msxconio all SDCC_VER=$(SDCC_VER) DEFINES=-DXXXXX
@@ -88,11 +91,6 @@ $(LIBDIR)/dos.lib:
 	@cp $(EXTERNALS)/sdcc_msxdos/lib/dos.lib $@
 	@cp $(EXTERNALS)/sdcc_msxdos/include/dos.h $(INCDIR)
 	@$(AR) -d $@ dos_putchar.c.rel dos_cputs.c.rel dos_kbhit.c.rel dos_cprintf.c.rel ;
-
-#$(LIBDIR)/unapi_net.lib: $(patsubst $(SRCLIB)/%, $(OBJDIR)/%.rel, $(wildcard $(SRCLIB)/unapinet_*))
-#	@echo "$(COL_WHITE)######## Creating $@$(COL_RESET)"
-#	@$(LIB_GUARD)
-#	@$(AR) $(LDFLAGS) $@ $^ ;
 
 $(LIBDIR)/utils.lib: $(patsubst $(SRCLIB)/%, $(OBJDIR)/%.rel, $(wildcard $(SRCLIB)/utils_*))
 	@echo "$(COL_WHITE)######## Creating $@$(COL_RESET)"
@@ -147,7 +145,7 @@ dsk: $(DSKNAME)
 
 ###################################################################################################
 
-clean: cleanobj cleanlibs
+clean: cleanres cleanobj cleanlibs
 	@rm -f $(OBJDIR)/$(PROGRAM).com $(DSKDIR)/$(PROGRAM).com \
 	       $(DSKNAME)
 
@@ -167,6 +165,13 @@ cleanlibs:
 	@$(MAKE) -C $(EXTERNALS)/sdcc_msxdos clean
 	@$(MAKE) -C $(EXTERNALS)/sdcc_msxconio clean
 	@$(MAKE) -C $(CONTRIB) clean
+
+cleanres:
+	@echo "$(COL_ORANGE)#### Cleaning res$(COL_RESET)"
+	@rm -f  $(SRCDIR)/libs/utils_help_zx0.c \
+			$(OBJDIR)/utils_help_zx0.c* \
+			$(LIBDIR)/utils.lib
+	@$(MAKE) -C $(RESDIR) clean
 
 
 ###################################################################################################
