@@ -8,27 +8,26 @@
 #include <string.h>
 #include "msx_const.h"
 #include "structs.h"
+#include "heap.h"
 #include "conio.h"
 #include "dos.h"
+#include "utils.h"
 #include "fh.h"
 #include "mod_commandLine.h"
+
+
+// ========================================================
+extern const unsigned char out_help_cmd_bin_zx0[];
 
 
 // ========================================================
 inline void printHelp()
 {
 	// Print help message
-	cputs("## FileHunter Browser v"VERSIONAPP"\n"
-		  "## by NataliaPC'2025\n\n"
-		  "Usage:\n"
-		  "\tFH [/H][/M <gen>][/S <search>][/P <panel>]\n"
-		  "\n"
-		  "\t/H\t\t\tShow this help message\n"
-		  "\t/M <1/2/2+/turbo-r>\tSet the MSX generation\n"
-		  "\t/P <rom/dsk/cas/vgm>\tSet the selected panel\n"
-		  "\t/S <search>\t\tSet the search string\n"
-		  "\n"
-		  "See FH.HLP file for more information.\n");
+	cputs("## File-Hunter Browser v"VERSIONAPP"\n"
+		  "## by "AUTHORAPP"\n");
+	dzx0_standard(out_help_cmd_bin_zx0, heap_top);
+	cputs(heap_top);
 	dos2_exit(1);
 }
 

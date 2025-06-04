@@ -1,0 +1,10 @@
+
+Usage:
+	FH [/H] [/S <search>] [/M <gen>] [/P <panel>]
+
+	/H			Show this help message
+	/S <search>		Set the search string
+	/M <1/2/2+/turbo-r>	Set the MSX generation
+	/P <rom/dsk/cas/vgm>	Set the selected panel
+
+See FH.HLP file for more information.
