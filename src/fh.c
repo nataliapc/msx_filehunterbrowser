@@ -48,9 +48,7 @@ const Panel_t panels[] = {
 	{"[R]OM", &reqType[REQTYPE_ROM], 'r', 1},
 	{"[D]SK", &reqType[REQTYPE_DSK], 'd', 8},
 	{"[C]AS", &reqType[REQTYPE_CAS], 'c', 15},
-#ifndef DISABLE_VGM
 	{"[V]GM", &reqType[REQTYPE_VGM], 'v', 22},
-#endif
 	{"", NULL, 0, 0}
 };
 
@@ -672,10 +670,8 @@ void menu_loop()
 					newPanel = PANEL_DSK; break;
 				case 'C':
 					newPanel = PANEL_CAS; break;
-#ifndef DISABLE_VGM
 				case 'V':
 					newPanel = PANEL_VGM; break;
-#endif
 					case 'M':
 					nextTargetMSX();
 					break;
