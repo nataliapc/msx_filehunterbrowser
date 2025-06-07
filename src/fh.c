@@ -285,6 +285,8 @@ void getRemoteList()
 		}
 	}
 #else
+	net_waitConnected(60*10);	// Wait for connection (10 seconds on NTSC, 12 on PAL)
+
 	HgetReturnCode_t ret = hget(
 		buff,						// URL
 		(int)HTTPStatusUpdate,		// progress_callback

@@ -63,15 +63,6 @@
 
 #include <stdbool.h>
 
-//#ifndef bool
-//typedef unsigned char bool;
-//#endif
-//#ifndef false
-//#define false (0)
-//#endif
-//#ifndef true
-//#define true (!false)
-//#endif
 
 enum HgetReturnCodes_enum {
     ERR_TCPIPUNAPI_OK = 0,
@@ -112,14 +103,18 @@ enum HgetReturnCodes_enum {
 };
 typedef unsigned char HgetReturnCode_t;
 
+
 // Functions Related to HTTP
 HgetReturnCode_t hgetinit (unsigned int addressforbuffer, const char *userAgent);
 void hgetfinish (void);
 #ifdef USE_TLS
-HgetReturnCode_t hget (char* url, /*char* filename, char* credent,*/ int progress_callback, bool checkcertificateifssl, bool checkhostnameifssl, /*char *rcvbuffer, unsigned int *rcvbuffersize,*/ int data_write_callback, int content_size_callback, bool enableKeepAlive);
+#warning "hget function prototype with TLS support!"
+HgetReturnCode_t hget (char* url, int progress_callback, bool checkcertificateifssl, bool checkhostnameifssl, int data_write_callback, int content_size_callback, bool enableKeepAlive);
 #else
-HgetReturnCode_t hget (char* url, /*char* filename, char* credent,*/ int progress_callback, /*char *rcvbuffer, unsigned int *rcvbuffersize,*/ int data_write_callback, int content_size_callback, bool enableKeepAlive);
+HgetReturnCode_t hget (char* url, int progress_callback, int data_write_callback, int content_size_callback, bool enableKeepAlive);
 #endif
 void hgetcancel();
+
+bool net_waitConnected(uint16_t timeout_ticks);
 
 #endif

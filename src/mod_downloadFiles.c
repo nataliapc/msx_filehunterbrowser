@@ -104,6 +104,8 @@ void downloadFileToDisk(ListItem_t *item)
 {
 	formatURL(buff, item-list_start);
 
+	net_waitConnected(60*10);		// Wait for connection (10 seconds on NTSC, 12 on PAL)
+
 	if (hget(
 		buff,						// URL
 		(int)HTTPStatusUpdate,		// progress_callback

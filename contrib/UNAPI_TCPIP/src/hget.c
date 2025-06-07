@@ -64,6 +64,7 @@
     int csprintf(char *str, const char *format, ...);
     #define sprintf csprintf
 #else
+    #warning "Conio.h is not available, using stdio.h instead for csprintf"
     #include <stdio.h>
 #endif
 
@@ -915,7 +916,7 @@ HgetReturnCode_t GetInputByte(byte *data)
 inline bool CheckNetworkConnection()
 {
     UnapiCall(codeBlock, TCPIP_NET_STATE, &reg, REGS_NONE, REGS_MAIN);
-    if(reg.Bytes.B == 0 || reg.Bytes.B == 3) {
+    if(reg.Bytes.B == TCPIP_NET_STATE_CLOSED || reg.Bytes.B == TCPIP_NET_STATE_CLOSING) {
         return false;
     }
     return true;

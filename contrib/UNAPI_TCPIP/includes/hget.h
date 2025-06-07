@@ -18,8 +18,8 @@
 #include "hgetlib.h"
 //These are available at www.konamiman.com
 #include "asm.h"
+#include "enums.h"
 #include "base64.h"
-
 
 #ifndef HGET_H
 #define HGET_H
@@ -73,40 +73,6 @@ typedef void (*funcptr)(bool);
 typedef void (*funcdataptr)(char *, int);
 typedef void (*funcsizeptr)(long);
 
-enum TcpipUnapiFunctions {
-    UNAPI_GET_INFO = 0,
-    TCPIP_GET_CAPAB = 1,
-    TCPIP_NET_STATE = 3,
-    TCPIP_DNS_Q = 6,
-    TCPIP_DNS_S = 7,
-    TCPIP_TCP_OPEN = 13,
-    TCPIP_TCP_CLOSE = 14,
-    TCPIP_TCP_ABORT = 15,
-    TCPIP_TCP_STATE = 16,
-    TCPIP_TCP_SEND = 17,
-    TCPIP_TCP_RCV = 18,
-    TCPIP_WAIT = 29
-};
-
-enum TcpipErrorCodes {
-    ERR_OK = 0,
-    ERR_NOT_IMP,
-    ERR_NO_NETWORK,
-    ERR_NO_DATA,
-    ERR_INV_PARAM,
-    ERR_QUERY_EXISTS,
-    ERR_INV_IP,
-    ERR_NO_DNS,
-    ERR_DNS,
-    ERR_NO_FREE_CONN,
-    ERR_CONN_EXISTS,
-    ERR_NO_CONN,
-    ERR_CONN_STATE,
-    ERR_BUFFER,
-    ERR_LARGE_DGRAM,
-    ERR_INV_OPER
-};
-
 /* Strings */
 #define strDefaultFilename "index.htm"
 
@@ -136,8 +102,8 @@ static int responseStatusCode;
 static byte responseStatusCodeFirstDigit;
 static char* headerTitle;
 static char* headerContents;
-static Z80_registers reg;
-static unapi_code_block* codeBlock;
+Z80_registers reg;
+unapi_code_block* codeBlock;
 static int ticksWaited;
 static int sysTimerHold;
 static bool redirectionUrlIsNewDomainName;
