@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all clean UNAPI_TCPIP
 
 SDCC_VER := 4.2.0
 DOCKER_IMG = nataliapc/sdcc:$(SDCC_VER)

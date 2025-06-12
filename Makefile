@@ -70,7 +70,7 @@ PROGRAM = fh
 DSKNAME = $(PROGRAM).dsk
 
 
-all: contrib res $(OBJDIR)/$(PROGRAM).com release
+all: res $(OBJDIR)/$(PROGRAM).com release
 
 contrib:
 	@$(MAKE) -C $(CONTRIB) all SDCC_VER=$(SDCC_VER)
@@ -96,6 +96,10 @@ $(LIBDIR)/utils.lib: $(patsubst $(SRCLIB)/%, $(OBJDIR)/%.rel, $(wildcard $(SRCLI
 	@echo "$(COL_WHITE)######## Creating $@$(COL_RESET)"
 	@$(LIB_GUARD)
 	@$(AR) $(LDFLAGS) $@ $^ ;
+
+$(LIBDIR)/unapi_tcpip.lib:
+	@$(LIB_GUARD)
+	@$(MAKE) -C $(CONTRIB) UNAPI_TCPIP SDCC_VER=$(SDCC_VER)
 
 $(OBJDIR)/%.rel: $(SRCDIR)/%.s
 	@echo "$(COL_BLUE)#### ASM $@$(COL_RESET)"
