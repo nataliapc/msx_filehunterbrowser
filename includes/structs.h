@@ -40,6 +40,7 @@ typedef struct {
 	ReqType_t *type;
 	char       key;
 	uint8_t    posx;
+	char      *description;
 } Panel_t;
 
 // Struct to hold a list item information
