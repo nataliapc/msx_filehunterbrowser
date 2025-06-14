@@ -4,6 +4,8 @@
 
 	See LICENSE file.
 */
+#pragma codeseg DISPOSABLE
+
 #include <stdint.h>
 #include <string.h>
 #include "msx_const.h"
@@ -44,12 +46,9 @@ void checkArguments(char **argv, int argc)
 		if (argv[i][0] != '/') goto end;
 		
 		cmd = dos2_toupper(argv[i][1]);
-		
-		// Print help
-		if (cmd == 'H') goto end;
-		
+
 		if (++i >= argc) goto end;
-		
+
 		// MSX generation
 		if (cmd == 'M') {
 			for (j=1; j<=REQMSX_MSXTR && strcmp(argv[i],reqMSX[j].value); ++j);

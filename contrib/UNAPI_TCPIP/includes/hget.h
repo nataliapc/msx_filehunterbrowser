@@ -77,7 +77,7 @@ typedef void (*funcsizeptr)(long);
 #define strDefaultFilename "index.htm"
 
 /* Global Variables */
-static const char *default_user_agent = "MSX_HGETLIB (MSX)";
+static const char *default_user_agent = "HGETLIB/1.3 (MSX)";
 static const char *user_agent;
 static bool continue_using_keep_alive;
 static byte conn;

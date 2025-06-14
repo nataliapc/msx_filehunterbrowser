@@ -4,11 +4,15 @@
 
 	See LICENSE file.
 */
+#pragma codeseg DISPOSABLE
+
+#include "conio_aux.h"
+
 
 // ========================================================
 // Char Patterns
 
-const char charPatters[] = {
+const char charPatterns[] = {
 	0b00000000,		// 24
 	0b00000000,
 	0b00000000,
@@ -63,3 +67,9 @@ const char charPatters[] = {
 	0b01111000,
 	0b00000000,
 };
+
+
+void redefineCharPatterns()
+{
+	_copyRAMtoVRAM((uint16_t)charPatterns, 0x1000+24*8, 6*8);
+}

@@ -124,7 +124,7 @@ cont:
 
 	;--- Step 3: Call the "main" function
 	push de
-	ld de,#_HEAP_start
+	ld de,#_HEAP_disposable
 	ld (_heap_top),de
 	ld de,#_unapiBuffer+2
 	ld (_unapiBuffer),de
@@ -174,7 +174,12 @@ gsinext:
 	.area	_GSFINAL
 	ret
 
-	;* These doesn't seem to be necessary... (?)
+	;--- One-use code area (reusable memory for heap)
+	.area	_DISPOSABLE
 
+	;* These doesn't seem to be necessary... (?)
 	;.area	_OVERLAY
 	;.area	_BSS
+
+	.area _HEAP_DISP (REL,CON)
+_HEAP_disposable::

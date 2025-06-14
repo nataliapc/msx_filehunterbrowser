@@ -50,6 +50,7 @@ REL_LIBS = 	$(addprefix $(OBJDIR)/, \
 				base64.rel \
 				 \
 				hget.rel \
+				net_getDriverInfo.rel \
 				net_waitConnected.rel \
 			)
 TARGET = $(LIBDIR)/unapi_tcpip.lib

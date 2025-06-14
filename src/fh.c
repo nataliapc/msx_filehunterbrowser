@@ -18,16 +18,16 @@
 #include "asm.h"
 #include "fh.h"
 #include "hgetlib.h"
-#include "patterns.h"
 #include "structs.h"
 #include "mod_downloadFiles.h"
 #include "mod_searchString.h"
 #include "mod_commandLine.h"
 #include "mod_help.h"
+#include "mod_charPatterns.h"
+#include "mod_disposable.h"
 #ifdef _DEBUG_
 	#include "test.h"
 #endif
-
 
 // ========================================================
 const char *BASEURL = "http://api.file-hunter.com/index4.php?base=1BA0&type=%s&msx=%s&char=%s&download=";
@@ -73,13 +73,15 @@ const char *downloadMessage[] = {
 
 
 // ========================================================
-static uint8_t msxVersionROM;
-static uint8_t kanjiMode;
-static uint8_t originalLINL40;
-static uint8_t originalSCRMOD;
-static uint8_t originalFORCLR;
-static uint8_t originalBAKCLR;
-static uint8_t originalBDRCLR;
+extern void HEAP_start;
+
+uint8_t msxVersionROM;
+uint8_t kanjiMode;
+uint8_t originalLINL40;
+uint8_t originalSCRMOD;
+uint8_t originalFORCLR;
+uint8_t originalBAKCLR;
+uint8_t originalBDRCLR;
 
 char *buff;
 Panel_t *currentPanel = &panels[PANEL_FIRST];
@@ -99,7 +101,7 @@ uint8_t marqueeLen = 0;
 #define DOWNLOAD_LIMIT_ADDR		(varTPALIMIT - BUFF_SIZE - STACKPILE_SIZE)
 #define VRAM_LIMIT_ADDR			(131072L)
 extern char *unapiBuffer;
-static const char *user_agent = FHBROWSER_AGENT;
+char *user_agent;
 ListItem_t *list_start;
 ListItem_t *list_item;
 char *list_raw;
@@ -124,59 +126,6 @@ void initializeBuffers()
 
 	// Assign buffers
 	buff = malloc(BUFF_SIZE);
-}
-
-void checkPlatformSystem()
-{
-	// Check TCP/IP UNAPI
-	char ret = hgetinit((uint16_t)unapiBuffer, user_agent);
-	if (ret != ERR_TCPIPUNAPI_OK) {
-#ifndef _DEBUG_
-		if (ret == ERR_TCPIPUNAPI_NOT_TCPIP_CAPABLE) {
-			die("TCP/IP UNAPI not fully capable!\x07\r\n");
-		} else
-		if (ret == ERR_HGET_INVALID_BUFFER) {
-			die("Invalid buffer for TCP/IP UNAPI!\x07\r\n");
-		}
-		die("TCP/IP UNAPI not found!\x07\r\n");
-#endif
-	}
-
-	// Check MSX2 ROM or higher
-	msxVersionROM = getRomByte(MSXVER);
-	if (!msxVersionROM) {
-		die("MSX1 not supported!");
-	}
-
-	// Check MSX-DOS 2 or higher
-	if (dosVersion() < VER_MSXDOS2x) {
-		die("MSX-DOS 2.x or higher required!");
-	}
-
-	// Set abort exit routine
-	dos2_setAbortRoutine((void*)abortRoutine);
-
-	// Backup original values
-	originalLINL40 = varLINL40;
-	originalSCRMOD = varSCRMOD;
-	originalFORCLR = varFORCLR;
-	originalBAKCLR = varBAKCLR;
-	originalBDRCLR = varBDRCLR;
-	kanjiMode = (detectKanjiDriver() ? getKanjiMode() : 0);
-}
-
-inline void redefineFunctionKeys()
-{
-	char *fk = (char*)FNKSTR;
-	memset(fk, 0, 160);
-	for (uint8_t i='1'; i<='5'; i++,fk+=16) {
-		*fk = i;
-	}
-}
-
-inline void redefineCharPatterns()
-{
-	_copyRAMtoVRAM((uint16_t)charPatters, 0x1000+24*8, 6*8);
 }
 
 inline bool isShiftKeyPressed()
@@ -561,18 +510,6 @@ inline void nextTargetMSX()
 // ========================================================
 void menu_loop()
 {
-	// Disable kanji mode if needed
-	if (kanjiMode) {
-		setKanjiMode(0);
-	}
-
-	// Initialize screen 0[80]
-	textmode(BW80);
-	textattr(0x71f4);
-	setcursortype(NOCURSOR);
-	redefineFunctionKeys();
-	redefineCharPatterns();
-
 	// Initialize header & panel
 	printHeader();
 	selectPanel(currentPanel);
@@ -785,6 +722,22 @@ int main(char **argv, int argc) __sdcccall(0)
 	//Platform system checks
 	checkPlatformSystem();
 
+	// Set real heap
+	heap_top = (void *)&HEAP_start;
+
+	// Disable kanji mode if needed
+	if (kanjiMode) {
+		setKanjiMode(0);
+	}
+
+	// Initialize screen 0[80]
+	textmode(BW80);
+	redefineCharPatterns();
+	redefineFunctionKeys();
+	textattr(0x71f4);
+	setcursortype(NOCURSOR);
+
+	// Initialize program
 	resetList();
 	initializeBuffers();
 

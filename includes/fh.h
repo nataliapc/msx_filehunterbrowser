@@ -13,7 +13,6 @@
 
 #define VERSIONAPP		"1.0.2"
 #define AUTHORAPP		"NataliaPC'2025"
-#define FHBROWSER_AGENT	"MSX_FHBrowser (MSX-DOS2)"
 
 #define VRAM_START		0x1ba0
 
@@ -74,6 +73,7 @@ void resetList();
 void formatURL(char *buff, uint16_t fileNum);
 void HTTPStatusUpdate(bool isChunked);
 
+void abortRoutine();
 void restoreScreen();
 void resetSelectedLine();
 void setSelectedLine(bool selected);

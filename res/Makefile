@@ -58,7 +58,7 @@ $(OUTDIR)/$(HELPCMD_ZX0): $(OUTDIR)/$(HELPCMD_BIN)
 
 $(OUTDIR)/$(HELPCMD_ZX0_C): $(OUTDIR)/$(HELPCMD_ZX0)
 	@$(XXD_GUARD)
-	@xxd -i $< | sed '/_len = /d' | sed 's/unsigned char/const unsigned char/' > $@
+	@xxd -i $< | sed '/_len = /d' | sed 's/unsigned char/#pragma codeseg DISPOSABLE\nconst unsigned char/' > $@
 	@cp $@ $(UTILSDIR)/
 
 
