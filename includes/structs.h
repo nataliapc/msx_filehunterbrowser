@@ -42,6 +42,7 @@ typedef struct {
 	uint8_t    posx;
 	char      *description;
 } Panel_t;
+#define MAX_PANEL_DESCRIPTION	30
 
 // Struct to hold a list item information
 typedef struct {

@@ -45,9 +45,9 @@ const ReqMSX_t reqMSX[] = {
 };
 
 const Panel_t panels[] = {
-	{"[R]OM", &reqType[REQTYPE_ROM], 'r', 1,  "[ ROM files ]      "},
-	{"[D]SK", &reqType[REQTYPE_DSK], 'd', 8,  "[ Disk images ]    "},
-	{"[C]AS", &reqType[REQTYPE_CAS], 'c', 15, "[ CAS tape dumps]  "},
+	{"[R]OM", &reqType[REQTYPE_ROM], 'r', 1,  "[ ROM files ]"},
+	{"[D]SK", &reqType[REQTYPE_DSK], 'd', 8,  "[ Disk images ]"},
+	{"[C]AS", &reqType[REQTYPE_CAS], 'c', 15, "[ CAS tape dumps ]"},
 	{"[V]GM", &reqType[REQTYPE_VGM], 'v', 22, "[ VGM music files ]"},
 	{"", NULL, 0, 0, NULL}
 };
@@ -322,6 +322,8 @@ void printTabs()
 			putstrxy(panel->posx, 2, "\x18\x17\x17\x17\x17\x17\x19");
 			putstrxy(panel->posx, 3, "\x16     \x16");
 			putstrxy(panel->posx, 4, "\x1b     \x1a");
+			// Print description
+			_fillVRAM(34, MAX_PANEL_DESCRIPTION, ' ');
 			putstrxy(35, 1, panel->description);
 		} else {
 			putstrxy(panel->posx, 2, "       ");
