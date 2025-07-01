@@ -5,7 +5,6 @@
 	See LICENSE file.
 */
 #pragma codeseg DISPOSABLE
-#pragma constseg DISPOSABLE
 
 #include <stdint.h>
 #include <string.h>
@@ -14,7 +13,9 @@
 #include "dos.h"
 #include "utils.h"
 #include "fh.h"
+#include "mod_charPatterns.h"
 #include "hgetlib.h"
+#include "asm.h"
 
 
 // ========================================================
@@ -57,6 +58,7 @@ void redefineFunctionKeys()
 	}
 }
 
+// ========================================================
 static void formatUserAgent(RETB msxdosVersion)
 {
 	UnapiDriverInfo_t *info = (UnapiDriverInfo_t*)&HEAP_disposable;
@@ -118,4 +120,39 @@ void checkPlatformSystem()
 	originalBAKCLR = varBAKCLR;
 	originalBDRCLR = varBDRCLR;
 	kanjiMode = (detectKanjiDriver() ? getKanjiMode() : 0);
+}
+
+// ========================================================
+inline void printHeader()
+{
+	textblink(1,1, 80, true);
+
+	putstrxy(2,1, "\x85 File-Hunter Browser v"VERSIONAPP);
+	putstrxy(66,1, AUTHORAPP);
+
+	for (uint8_t i=0; i<80; i++) {
+		setByteVRAM(3*80+i, 0x17);
+		setByteVRAM(22*80+i, 0x17);
+	}
+
+	// Print footer
+	putstrxy(48,24, "F1:Help  F5:Download  RET:Search");
+}
+
+void initializeScreen()
+{
+	// Disable kanji mode if needed
+	if (kanjiMode) {
+		setKanjiMode(0);
+	}
+
+	// Initialize screen 0[80]
+	textmode(BW80);
+	redefineCharPatterns();
+	redefineFunctionKeys();
+	textattr(0x71f4);
+	setcursortype(NOCURSOR);
+
+	// Print header and footer
+	printHeader();
 }

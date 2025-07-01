@@ -62,8 +62,8 @@ REL_LIBS = 	$(addprefix $(LIBDIR)/, $(LIBS)) \
 				heap.rel \
 				mod_searchString.rel \
 				mod_downloadFiles.rel \
-				mod_commandLine.rel \
 				mod_help.rel \
+				mod_commandLine.rel \
 				mod_charPatterns.rel \
 				mod_disposable.rel \
 			)

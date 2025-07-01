@@ -9,3 +9,5 @@
 
 void redefineFunctionKeys();
 void checkPlatformSystem();
+
+void initializeScreen();

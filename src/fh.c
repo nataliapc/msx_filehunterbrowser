@@ -23,7 +23,6 @@
 #include "mod_searchString.h"
 #include "mod_commandLine.h"
 #include "mod_help.h"
-#include "mod_charPatterns.h"
 #include "mod_disposable.h"
 #ifdef _DEBUG_
 	#include "test.h"
@@ -286,32 +285,12 @@ void removeUpdateMessage()
 	fillBlink(1,UPDATING_POSY, 3,80, false);
 }
 
-void printDefaultFooter()
-{
-	putstrxy(48,24, "F1:Help  F5:Download  RET:Search");
-}
-
 void printLineCounter()
 {
 	csprintf(buff, "\x13 %u/%u \x14\x17\x17\x17\x17",
 		itemsCount ? topLine+currentLine+1 : 0,
 		itemsCount);
 	putstrxy(35,23, buff);
-}
-
-void printHeader()
-{
-	textblink(1,1, 80, true);
-
-	putstrxy(2,1, "\x85 File-Hunter Browser v"VERSIONAPP);
-	putstrxy(66,1, AUTHORAPP);
-
-	for (uint8_t i=0; i<80; i++) {
-		setByteVRAM(3*80+i, 0x17);
-		setByteVRAM(22*80+i, 0x17);
-	}
-
-	printDefaultFooter();
 }
 
 void printTabs()
@@ -513,8 +492,7 @@ inline void nextTargetMSX()
 // ========================================================
 void menu_loop()
 {
-	// Initialize header & panel
-	printHeader();
+	// Initialize panel
 	selectPanel(currentPanel);
 
 	// Menu loop
@@ -725,20 +703,8 @@ int main(char **argv, int argc) __sdcccall(0)
 	//Platform system checks
 	checkPlatformSystem();
 
-	// Set real heap
-	heap_top = (void *)&HEAP_start;
-
-	// Disable kanji mode if needed
-	if (kanjiMode) {
-		setKanjiMode(0);
-	}
-
-	// Initialize screen 0[80]
-	textmode(BW80);
-	redefineCharPatterns();
-	redefineFunctionKeys();
-	textattr(0x71f4);
-	setcursortype(NOCURSOR);
+	// Initialize screen
+	initializeScreen();
 
 	// Initialize program
 	resetList();

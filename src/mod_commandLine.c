@@ -19,6 +19,7 @@
 
 
 // ========================================================
+extern void HEAP_disposable;
 extern const unsigned char out_help_cmd_bin_zx0[];
 
 
@@ -28,8 +29,8 @@ inline void printHelp()
 	// Print help message
 	cputs("## File-Hunter Browser v"VERSIONAPP"\n"
 		  "## by "AUTHORAPP"\n");
-	dzx0_standard(out_help_cmd_bin_zx0, heap_top);
-	cputs(heap_top);
+	dzx0_standard(out_help_cmd_bin_zx0, &HEAP_disposable);
+	cputs(&HEAP_disposable);
 	dos2_exit(1);
 }
 
