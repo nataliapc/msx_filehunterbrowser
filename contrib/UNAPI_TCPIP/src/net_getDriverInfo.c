@@ -17,7 +17,12 @@
 
 extern Z80_registers reg;
 
+/*
+	Function: net_getDriverInfo
 
+	UNAPI driver must be initialized before calling this function.
+	It retrieves the driver name, specification version, and driver version.
+*/
 bool net_getDriverInfo(void *codeBlock, UnapiDriverInfo_t *info)
 {
 	info->driverName[0] = '\0';		// Initialize name address to empty

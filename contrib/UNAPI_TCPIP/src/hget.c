@@ -69,15 +69,10 @@
 #endif
 
 
-HgetReturnCode_t hgetinit(unsigned int addressforbuffer, const char* userAgent)
+HgetReturnCode_t hgetinit(unsigned int addressforbuffer)
 {
     if (!hasinitialized)
     {
-        if (userAgent != NULL)
-            user_agent = userAgent;
-        else
-            user_agent = default_user_agent;
-
         continue_using_keep_alive = true;
         conn = 0;
         hasinitialized = false;
@@ -111,6 +106,14 @@ HgetReturnCode_t hgetinit(unsigned int addressforbuffer, const char* userAgent)
     }
     else
         return ERR_HGET_ALREADY_INITIALIZED;
+}
+
+void hgetSetUserAgent(const char* userAgent)
+{
+    if (userAgent != NULL)
+        user_agent = userAgent;
+    else
+        user_agent = default_user_agent;
 }
 
 

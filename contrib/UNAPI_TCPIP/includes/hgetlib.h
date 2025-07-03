@@ -113,13 +113,14 @@ typedef struct {
 
 
 // Functions Related to HTTP
-HgetReturnCode_t hgetinit (unsigned int addressforbuffer, const char *userAgent);
-void hgetfinish (void);
+HgetReturnCode_t hgetinit(unsigned int addressforbuffer);
+void hgetfinish(void);
+void hgetSetUserAgent(const char* userAgent);
 #ifdef USE_TLS
 #warning "hget function prototype with TLS support!"
-HgetReturnCode_t hget (char* url, int progress_callback, bool checkcertificateifssl, bool checkhostnameifssl, int data_write_callback, int content_size_callback, bool enableKeepAlive);
+HgetReturnCode_t hget(char* url, int progress_callback, bool checkcertificateifssl, bool checkhostnameifssl, int data_write_callback, int content_size_callback, bool enableKeepAlive);
 #else
-HgetReturnCode_t hget (char* url, int progress_callback, int data_write_callback, int content_size_callback, bool enableKeepAlive);
+HgetReturnCode_t hget(char* url, int progress_callback, int data_write_callback, int content_size_callback, bool enableKeepAlive);
 #endif
 void hgetcancel();
 

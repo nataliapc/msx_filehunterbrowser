@@ -76,6 +76,7 @@ static void formatUserAgent(RETB msxdosVersion)
 
 	user_agent = (char*)malloc(strlen(uagentTmp) + 1);
 	strcpy((char*)user_agent, uagentTmp);
+	hgetSetUserAgent(user_agent);
 }
 
 // ========================================================
@@ -93,11 +94,8 @@ void checkPlatformSystem()
 		die("MSX-DOS 2.x or higher required!");
 	}
 
-	// Format the user agent
-	formatUserAgent(msxdosVersion);
-
 	// Check TCP/IP UNAPI
-	char ret = hgetinit((uint16_t)unapiBuffer, user_agent);
+	char ret = hgetinit((uint16_t)unapiBuffer);
 	if (ret != ERR_TCPIPUNAPI_OK) {
 #ifndef _DEBUG_
 		if (ret == ERR_TCPIPUNAPI_NOT_TCPIP_CAPABLE) {
@@ -109,6 +107,9 @@ void checkPlatformSystem()
 		die("TCP/IP UNAPI not found!\x07\r\n");
 #endif
 	}
+	// Format the user agent
+	formatUserAgent(msxdosVersion);
+
 
 	// Set abort exit routine
 	dos2_setAbortRoutine((void*)abortRoutine);
