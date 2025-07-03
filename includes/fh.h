@@ -11,7 +11,7 @@
 #include "conio_aux.h"
 
 
-#define VERSIONAPP		"1.0.3"
+#define VERSIONAPP		"1.0.4"
 #define AUTHORAPP		"NataliaPC'2025"
 
 #define VRAM_START		0x1ba0
