@@ -14,6 +14,7 @@ You can search, browse and download ROM cartridges, disk images, cassette files 
 - [How to compile](#how-to-compile)  
 - [Thanks](#thanks)  
 - [License](#license)  
+- 🌟 [More stars!](#more-stars) 🌟
 
 ## Features
 - **Direct file-hunter.com access**: Browse and download files from the largest MSX file database
@@ -104,3 +105,9 @@ Thanks to Arnaud de Klerk, @leomanes, @skillax, @ducasp, and @konamiman.
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
+
+## More stars!
+
+Please give us a star on [GitHub](https://github.com/nataliapc/msx_filehunterbrowser) if you like this project.
+
+[![Star History Chart](https://api.star-history.com/svg?repos=nataliapc/msx_filehunterbrowser&type=Date)](https://www.star-history.com/#nataliapc/msx_filehunterbrowser&Date)
