@@ -110,4 +110,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 Please give us a star on [GitHub](https://github.com/nataliapc/msx_filehunterbrowser) if you like this project.
 
-[![Star History Chart](https://api.star-history.com/svg?repos=nataliapc/msx_filehunterbrowser&type=Date)](https://www.star-history.com/#nataliapc/msx_filehunterbrowser&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=nataliapc/msx_filehunterbrowser&type=Date&theme=dark)](https://www.star-history.com/#nataliapc/msx_filehunterbrowser&Date)
