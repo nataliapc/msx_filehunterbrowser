@@ -18,3 +18,4 @@ src/libs/utils_help_zx0.c
 *.zip
 *.wav
 *.mp3
+.agents
